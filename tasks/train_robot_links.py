@@ -3,31 +3,21 @@ import copy
 import json
 import os
 import pathlib
-import math
 import shutil
 import socket
 from typing import Any, Callable, Dict, List, Tuple, Union
 import multiprocessing
 import time
 import argparse
-import git
 import numpy as np
 import scipy.stats as stats
 import torch
 import torch.nn as nn
 import torch_geometric.data as gd
-# from rdkit import RDLogger
-# from rdkit.Chem.rdchem import Mol as RDMol
 from torch import Tensor
 from torch.utils.data import Dataset
 import wandb
-# wandb.login()
-# wandb.init(
-#     # Set the project where this run will be logged
-#     project="test", 
-#     # We pass a run name (otherwise it’ll be randomly assigned, like sunshine-lollypop-10)
-#     name="Ant_links_test", 
-#     )
+
 from utils.misc import create_logger
 from algo.flow_matching import FlowMatching
 from algo.trajectory_balance import TrajectoryBalance
@@ -38,9 +28,6 @@ from models import bengio2021flow
 from models.graph_transformer import GraphTransformerGFN
 from train import FlatRewards, GFNTask, GFNTrainer, RewardScalar
 from utils.transforms import thermometer
-# from robonet.envs.robot_env import robot_to_graph, simulate
-
-
 
 POLICY_PATH = ""
 
@@ -49,28 +36,8 @@ def cycle(it):
         for i in it:
             yield i
 
-def simulate_robot(robot):
-    timesteps = 200_000
-    try:
-        pred_rew = simulate(robot, timesteps)
-        # to provide gfn only non-negative rewards
-        if pred_rew <= 0:
-            pred_rew = 0.001
-    except Exception as e:
-        pred_rew = 0.0001
-    return pred_rew
-    
 
-class SEHTask(GFNTask):
-    """Sets up a task where the reward is computed using a proxy for the binding energy of a molecule to
-    Soluble Epoxide Hydrolases.
-
-    The proxy is pretrained, and obtained from the original GFlowNet paper, see `gflownet.models.bengio2021flow`.
-
-    This setup essentially reproduces the results of the Trajectory Balance paper when using the TB
-    objective, or of the original paper when using Flow Matching (TODO: port to this repo).
-    """
-
+class RoboGenTask(GFNTask):
     def __init__(
         self,
         log_dir,
@@ -83,7 +50,6 @@ class SEHTask(GFNTask):
     ):
         self._wrap_model = wrap_model
         self.rng = rng
-        # self.models = self._load_task_models()
         self.dataset = dataset
         self.temperature_sample_dist = temperature_distribution
         self.temperature_dist_params = temperature_parameters
@@ -96,15 +62,10 @@ class SEHTask(GFNTask):
     def inverse_flat_reward_transform(self, rp):
         return rp * 8
 
-    # def _load_task_models(self):
-    #     model = bengio2021flow.load_original_model()
-    #     model, self.device = self._wrap_model(model, send_to_device=True)
-    #     return {"seh": model}
-
     def sample_conditional_information(self, n: int, train_it: int) -> Dict[str, Tensor]:
         beta = None
         if self.temperature_sample_dist == "constant":
-            assert type(self.temperature_dist_params) is float
+            assert isinstance(self.temperature_dist_params, float)
             beta = np.array(self.temperature_dist_params).repeat(n).astype(np.float32)
             beta_enc = torch.zeros((n, self.num_thermometer_dim))
         else:
@@ -115,8 +76,6 @@ class SEHTask(GFNTask):
             elif self.temperature_sample_dist == "uniform":
                 beta = self.rng.uniform(*self.temperature_dist_params, n).astype(np.float32)
                 upper_bound = self.temperature_dist_params[1]
-                # print("BETA", beta)
-                # print("upper_bound", upper_bound)
             elif self.temperature_sample_dist == "loguniform":
                 low, high = np.log(self.temperature_dist_params)
                 beta = np.exp(self.rng.uniform(low, high, n).astype(np.float32))
@@ -125,21 +84,11 @@ class SEHTask(GFNTask):
                 beta = self.rng.beta(*self.temperature_dist_params, n).astype(np.float32)
                 upper_bound = 1
             beta_enc = thermometer(torch.tensor(beta), self.num_thermometer_dim, 0, upper_bound)
-            # print("beta_enc", beta_enc)
 
         assert len(beta.shape) == 1, f"beta should be a 1D array, got {beta.shape}"
         return {"beta": torch.tensor(beta), "encoding": beta_enc}
 
     def encode_conditional_information(self, steer_info: Tensor) -> Dict[str, Tensor]:
-        """
-        Encode conditional information at validation-time
-        We use the maximum temperature beta for inference
-        Args:
-            steer_info: Tensor of shape (Batch, 2 * n_objectives) containing the preferences and focus_dirs
-            in that order
-        Returns:
-            Dict[str, Tensor]: Dictionary containing the encoded conditional information
-        """
         n = len(steer_info)
         if self.temperature_sample_dist == "constant":
             beta = torch.ones(n) * self.temperature_dist_params
@@ -150,7 +99,6 @@ class SEHTask(GFNTask):
 
         assert len(beta.shape) == 1, f"beta should be of shape (Batch,), got: {beta.shape}"
 
-        # TODO: positional assumption here, should have something cleaner
         preferences = steer_info[:, : len(self.objectives)].float()
         focus_dir = steer_info[:, len(self.objectives) :].float()
 
@@ -165,45 +113,16 @@ class SEHTask(GFNTask):
         }
 
     def cond_info_to_logreward(self, cond_info: Dict[str, Tensor], flat_reward: FlatRewards) -> RewardScalar:
-        # print("cond_info", cond_info)
-        # print("flat_reward", flat_reward)
         if isinstance(flat_reward, list):
             flat_reward = torch.tensor(flat_reward)
         # scalar_logreward = flat_reward.squeeze().clamp(min=1e-30).log() #- original 
         scalar_logreward = flat_reward.squeeze().clamp(min=1e-30) # - Kishan modified
         
-        # print("scalar_logreward", flat_reward)
         assert len(scalar_logreward.shape) == len(
             cond_info["beta"].shape
         ), f"dangerous shape mismatch: {scalar_logreward.shape} vs {cond_info['beta'].shape}"
         return RewardScalar(scalar_logreward * cond_info["beta"])
 
-    # def compute_flat_rewards(self, robots) -> Tuple[FlatRewards, Tensor]:
-    #     pred_rews = []
-        
-    #     for robot in robots:
-    #         # This line ensures we are only running GFN for identifying/generating valid robots 
-    #         pred_rew = 100
-    #         # try:
-    #         #      pred_rew = simulate(robot, task='swimmer')
-    #         # except Exception as e:
-    #         #     print("this robot is not good robot", robot)
-    #         #     print(f"Because {e}")
-    #         #     pred_rew = 0
-    #     pred_rews.append(pred_rew)
-
-    #     is_valid = torch.tensor([i is not None for i in robots]).bool()
-    #     if not is_valid.any():
-    #         return FlatRewards(torch.zeros((0, 1))), is_valid
-
-    #     pred_rews_arr = np.array(pred_rews)
-    #     preds = self.flat_reward_transform(pred_rews_arr).clip(1e-4, 100).reshape((-1, 1))
-    #     # print("PREDS", preds)
-    #     # print("is_valid", is_valid)
-    #     return FlatRewards(preds), is_valid
-
-
-    # multiprocessing with rew from mujoco simulations
     def compute_flat_rewards(self, xml_robots, graphs, timesteps, env_id) -> Tuple[FlatRewards, Tensor]:
         pred_rews = []
         start_time = time.time()
@@ -222,11 +141,6 @@ class SEHTask(GFNTask):
             pred_rews.append(reward*4)
 
         print("pred_rews", pred_rews)
-
-        # Uncomment for Mujoco simulation 
-        # with multiprocessing.Pool(processes=200) as pool:
-        #     pred_rews = pool.map(simulate_robot, xml_robots)
-        # print("---finished pooling process in %s seconds ---" % (time.time() - start_time))
         
         is_valid = torch.tensor([i is not None for i in xml_robots]).bool()
         if not is_valid.any():
@@ -234,9 +148,8 @@ class SEHTask(GFNTask):
         pred_rews_arr = np.array(pred_rews)
         preds = self.flat_reward_transform(pred_rews_arr).clip(1e-4, 100).reshape((-1, 1))
         return FlatRewards(preds), is_valid
-        
 
-class SEHFragTrainer(GFNTrainer):
+class RoboTrainer(GFNTrainer):
     def default_hps(self) -> Dict[str, Any]:
         return {
             "hostname": socket.gethostname(),
@@ -283,7 +196,7 @@ class SEHFragTrainer(GFNTrainer):
         self.algo = algo(self.env, self.ctx, self.rng, self.hps, max_nodes=self.hps["max_nodes"])
 
     def setup_task(self):
-        self.task = SEHTask(
+        self.task = RoboGenTask(
             dataset=self.training_data,
             temperature_distribution=self.hps["temperature_sample_dist"],
             temperature_parameters=self.hps["temperature_dist_params"],
@@ -303,7 +216,6 @@ class SEHFragTrainer(GFNTrainer):
 
     def setup(self):
         hps = self.hps
-        # RDLogger.DisableLog("rdApp.*")
         self.rng = np.random.default_rng(14285)
         self.env = GraphBuildingEnv()
         self.training_data = []
@@ -320,7 +232,6 @@ class SEHFragTrainer(GFNTrainer):
         self.setup_task()
         self.setup_model()
 
-        # Separate Z parameters from non-Z to allow for LR decay on the former
         Z_params = list(self.model.logZ.parameters())
         non_Z_params = [i for i in self.model.parameters() if all(id(i) != id(j) for j in Z_params)]
         self.opt = torch.optim.Adam(
@@ -350,10 +261,6 @@ class SEHFragTrainer(GFNTrainer):
             "none": (lambda x: None),
         }[hps["clip_grad_type"]]
 
-        # saving hyperparameters
-        # git_hash = git.Repo(__file__, search_parent_directories=True).head.object.hexsha[:7]
-        # self.hps["gflownet_git_hash"] = git_hash
-
         os.makedirs(self.hps["log_dir"], exist_ok=True)
         fmt_hps = "\n".join([f"{f'{k}':40}:\t{f'({type(v).__name__})':10}\t{v}" for k, v in sorted(self.hps.items())])
         print(f"\n\nHyperparameters:\n{'-'*50}\n{fmt_hps}\n{'-'*50}\n\n")
@@ -375,49 +282,28 @@ class SEHFragTrainer(GFNTrainer):
                 b.data.mul_(self.sampling_tau).add_(a.data * (1 - self.sampling_tau))
     
     def update_max_nodes(self, iteration):
-        # Calculate new max_nodes value based on iteration
         if iteration < 150:
             base_max_nodes = self.hps["max_nodes"] + 1
             new_max_nodes = 3 + (iteration % (base_max_nodes - 3))
         else:
             new_max_nodes = self.hps["max_nodes"] 
-        # Update max_nodes in hps
-        # self.hps["max_nodes"] = new_max_nodes
         
-        # Update algo
         self.algo.max_nodes = new_max_nodes
-        
-        # Update env context
         self.ctx.max_frags = new_max_nodes
-        
-        # Update model if necessary
-        # Depending on your GraphTransformerGFN implementation, you might need to update it here
         
         print(f"Updated max_nodes to {new_max_nodes} at iteration {iteration}")
 
     def run(self, logger=None):
-        """Trains the GFN for `num_training_steps` minibatches, performing
-        validation every `validate_every` minibatches.
-        """
-
-
-        print("ARRIVED HERE")
-
         if logger is None:
             logger = create_logger(logfile=self.hps["log_dir"] + "/train.log")
 
         self.model.to(self.device)
         self.sampling_model.to(self.device)
-        epoch_length = max(len(self.training_data), 50)             # changed from 1 to 20 - Kishan
+        epoch_length = max(len(self.training_data), 50)
         valid_freq = self.hps.get("validate_every", 0)
-        # If checkpoint_every is not specified, checkpoint at every validation epoch
         ckpt_freq = self.hps.get("checkpoint_every", valid_freq)
-        traindl_start_time = time.time()
         train_dl = self.build_training_data_loader()   
-        print("---Built training data loader in %s seconds ---" % (time.time() - traindl_start_time))
-        # valddl_start_time = time.time()
         valid_dl = self.build_validation_data_loader()
-        # print("---Built validation data loader in %s seconds ---" % (time.time() - valddl_start_time))
 
         if self.hps.get("num_final_gen_steps", 0) > 0:
             final_dl = self.build_final_data_loader()
@@ -425,12 +311,10 @@ class SEHFragTrainer(GFNTrainer):
         start = self.hps.get("start_at_step", 0) + 1
         logger.info("Starting training")
 
-        train_start_time = time.time()
         train_dl_iter = cycle(train_dl)
         for it in range(start, 1 + self.hps["num_training_steps"]):
             self.update_max_nodes(it)
             batch = next(train_dl_iter)
-            #write iteration count to file
             with open(os.path.join(self.hps["log_dir"], 'counter.txt'), 'w') as f:
                 f.write(f"{it}")
 
@@ -441,9 +325,7 @@ class SEHFragTrainer(GFNTrainer):
                     f"iteration {it} : warming up replay buffer {len(self.replay_buffer)}/{self.replay_buffer.warmup}"
                 )
                 continue
-            start = time.time()
             info = self.train_batch(batch.to(self.device), epoch_idx, batch_idx, it)
-            # print("---Train time in %s seconds ---" % (time.time() - start))
 
             self.log(info, it, "train")
             if it % self.print_every == 0:
@@ -451,9 +333,7 @@ class SEHFragTrainer(GFNTrainer):
 
             if valid_freq > 0 and it % valid_freq == 0:
                 for batch in valid_dl:
-                    start_eval = time.time()
                     info = self.evaluate_batch(batch.to(self.device), epoch_idx, batch_idx)
-                    # print("---Eval time in %s seconds ---" % (time.time() - start_eval))
                     self.log(info, it, "valid")
                     logger.info(f"validation - iteration {it} : " + " ".join(f"{k}:{v:.2f}" for k, v in info.items()))
                 end_metrics = {}
@@ -462,10 +342,9 @@ class SEHFragTrainer(GFNTrainer):
                         c.on_validation_end(end_metrics)
                 self.log(end_metrics, it, "valid_end")
             if ckpt_freq > 0 and it % ckpt_freq == 0:
-                # print("Saving Checkpoint")
                 self._save_state(it)
         self._save_state(self.hps["num_training_steps"])
-        # print("---Overall (train + validation time in %s seconds ---" % (time.time() - train_start_time))
+        
         num_final_gen_steps = self.hps.get("num_final_gen_steps", 0)
         if num_final_gen_steps > 0:
             logger.info(f"Generating final {num_final_gen_steps} batches ...")
@@ -476,9 +355,7 @@ class SEHFragTrainer(GFNTrainer):
                 pass
             logger.info("Final generation steps completed.")
 
-
 def main():
-
     global POLICY_PATH
     global EXP_METHOD
 
@@ -498,13 +375,11 @@ def main():
     parser.add_argument("--lastbatch_rl_timesteps", help='lastbatch_rl_timesteps', type=int, default=1_000_000)
     args = parser.parse_args()
     
-    # Step 1: Create a new folder
     postfix = int(time.time())
     log_folder = "exp_{}_{}_{}".format(args.name, args.seed, postfix)
     log_folder_path = os.path.join(args.run_path, log_folder)
     os.mkdir(log_folder_path)
 
-    # Step 2: Copy the xml file to this folder
     xml_folder = "xmlrobots"
     xml_folder_path = os.path.join(log_folder_path, xml_folder)
     os.mkdir(xml_folder_path)
@@ -542,23 +417,9 @@ def main():
         "offline_ratio": 0.5,
     }
 
-    # print("gfn full run with 1 seeds, train_steps = 1000, robot_env timesteps = 200k")
     print("32 bs, Nw size increased to 128x3, epochs = 50, changing maxnodes till 150 iterations. buffer size = 10000. Action size - 25x4, rew*4 and log removed")
-    # if os.path.exists(hps["log_dir"]):
-    #     if hps["overwrite_existing_exp"]:
-    #         shutil.rmtree(hps["log_dir"])
-    #     else:
-    #         raise ValueError(f"Log dir {hps['log_dir']} already exists. Set overwrite_existing_exp=True to delete it.")
     
-    # os.makedirs(hps["log_dir"])
-    
-    trial = SEHFragTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
-
-    # num_cpu_cores = os.cpu_count()
-    # print("num_cpu_cores", num_cpu_cores)
-
-    # num_available_processors = multiprocessing.cpu_count()
-    # print("Number of available processors:", num_available_processors)
+    trial = RoboTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
 
     trial.print_every = 1
     trial.run()

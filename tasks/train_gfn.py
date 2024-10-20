@@ -152,11 +152,6 @@ class RoboGenTask(GFNTask):
     def inverse_flat_reward_transform(self, rp):
         return rp * 8
 
-    # def _load_task_models(self):
-    #     model = bengio2021flow.load_original_model()
-    #     model, self.device = self._wrap_model(model, send_to_device=True)
-    #     return {"seh": model}
-
     def sample_conditional_information(self, n: int, train_it: int) -> Dict[str, Tensor]:
         beta = None
         if self.temperature_sample_dist == "constant":
@@ -187,15 +182,6 @@ class RoboGenTask(GFNTask):
         return {"beta": torch.tensor(beta), "encoding": beta_enc}
 
     def encode_conditional_information(self, steer_info: Tensor) -> Dict[str, Tensor]:
-        """
-        Encode conditional information at validation-time
-        We use the maximum temperature beta for inference
-        Args:
-            steer_info: Tensor of shape (Batch, 2 * n_objectives) containing the preferences and focus_dirs
-            in that order
-        Returns:
-            Dict[str, Tensor]: Dictionary containing the encoded conditional information
-        """
         n = len(steer_info)
         if self.temperature_sample_dist == "constant":
             beta = torch.ones(n) * self.temperature_dist_params
@@ -234,8 +220,6 @@ class RoboGenTask(GFNTask):
         ), f"dangerous shape mismatch: {scalar_logreward.shape} vs {cond_info['beta'].shape}"
         return RewardScalar(scalar_logreward * cond_info["beta"])
 
-
-    # multiprocessing with rew from mujoco simulations
     def compute_flat_rewards(self, xml_robots, graphs, timesteps, env_id) -> Tuple[FlatRewards, Tensor]:
         eprewmeans = []
         # start_time = time.time()
@@ -245,7 +229,6 @@ class RoboGenTask(GFNTask):
         
         no_return_value = 0.001
         valid_robots = []
-
 
         for robot in xml_robots:
             try:
@@ -439,12 +422,6 @@ class RoboTrainer(GFNTrainer):
         print(f"Updated max_nodes to {new_max_nodes} at iteration {iteration}")
 
     def run(self, logger=None):
-        """Trains the GFN for `num_training_steps` minibatches, performing
-        validation every `validate_every` minibatches.
-        """
-
-
-        # print("ARRIVED HERE")
 
         if logger is None:
             logger = create_logger(logfile=self.hps["log_dir"] + "/train.log")
@@ -620,10 +597,8 @@ def main():
     
     trial = RoboTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
 
-
     trial.print_every = 1
     trial.run()
-
 
 
 if __name__ == "__main__":
