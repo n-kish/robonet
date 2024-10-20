@@ -1,5 +1,5 @@
 <!--similar to Walker2D env-->
-<mujoco model="ant">
+<mujoco model="walker">
   <compiler angle="degree" coordinate="local" inertiafromgeom="true"/>
   <option integrator="RK4" timestep="0.01"/>
   <custom>

@@ -1,13 +1,14 @@
 
 seed=134
-env_id="Ant-v5"
-train_steps=5_000
+env="walker"
+env_id="Walker2d-v5"
+train_steps=300_000
 start_point="base"    # "orig" / "base"
-exp_method="naive"      # "naive" / "GS" / "CA" / "GSCA"   
+exp_method="GSCA"      # "naive" / "GS" / "CA" / "GSCA"   
 env_terrain="flat"      # "flat" / "incline" / "gap" / "wall"
-path="/home/knagiredla/gfn_archive/gfn_current/expt_logs"
-max_nodes=9
-min_steps=150_000
+path="/home/knagiredla/robonet/logs"
+max_nodes=10
+min_steps=30_000
 
 # echo "env_terrain is $env_terrain"
 
@@ -21,7 +22,7 @@ fi
 
 experiment_name="${exp_method}_${max_nodes}_${env_terrain}_${start_point}_${env}_${train_steps}"
 
-scripts="python ./tasks/train_robot_links.py"  
+scripts="python ./tasks/train_gfn.py"  
 
 for seed in 134
 do
@@ -32,6 +33,7 @@ do
             --min_steps $min_steps \
             --lastbatch_rl_timesteps 1_000_000 \
             --seed $seed \
+            --env_id $env_id \
             --env $env \
             --start_point $start_point \
             --env_terrain $env_terrain \

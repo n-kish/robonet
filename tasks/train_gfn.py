@@ -402,22 +402,14 @@ class RoboTrainer(GFNTrainer):
                 b.data.mul_(self.sampling_tau).add_(a.data * (1 - self.sampling_tau))
     
     def update_max_nodes(self, iteration):
-        # Calculate new max_nodes value based on iteration
-        if iteration < 300:
-            new_max_nodes = np.random.randint(3, self.hps["max_nodes"] + 1)  # Random integer between 3 and 10 (inclusive)
+        if iteration < 150:
+            base_max_nodes = self.hps["max_nodes"] + 1
+            new_max_nodes = 3 + (iteration % (base_max_nodes - 3))
         else:
-            new_max_nodes = self.hps["max_nodes"]    
-        # Update max_nodes in hps
-        # self.hps["max_nodes"] = new_max_nodes
+            new_max_nodes = self.hps["max_nodes"] 
         
-        # Update algo
         self.algo.max_nodes = new_max_nodes
-        
-        # Update env context
         self.ctx.max_frags = new_max_nodes
-        
-        # Update model if necessary
-        # Depending on your GraphTransformerGFN implementation, you might need to update it here
         
         print(f"Updated max_nodes to {new_max_nodes} at iteration {iteration}")
 
@@ -506,6 +498,7 @@ def main():
     parser.add_argument("--run_path", default="./logs")
     parser.add_argument("--base_xml_path", type=str, default='./assets/base_ant_incline.xml')
     parser.add_argument("--env_id", type=str, default='Ant-v5')
+    parser.add_argument("--env", type=str, default='ant')
     parser.add_argument("--start_point", type=str, default='base')
     parser.add_argument("--env_terrain", type=str, default='wall')
     parser.add_argument("--terrain_from_external_source", type=int, default=1)

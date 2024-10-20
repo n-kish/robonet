@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=1G
-#SBATCH --error="/home/knagiredla/gfn_archive/gfn_current/output/ppo.err"
+#SBATCH --error="/home/knagiredla/robonet/output/ppo.err"
 #SBATCH --time=02:00:00
 #SBATCH --output=__OUTPUT_PATH__
 
