@@ -1,0 +1,11 @@
+# Logs
+*.log
+*.wandb
+
+# pycache
+tasks/__pycache__/
+algo/__pycache__/
+data/__pycache__/
+envs/__pycache__/
+models/__pycache__/
+utils/__pycache__/
