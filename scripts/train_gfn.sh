@@ -1,6 +1,6 @@
 
 seed=134
-env="ant"
+env_id="Ant-v5"
 train_steps=5_000
 start_point="base"    # "orig" / "base"
 exp_method="naive"      # "naive" / "GS" / "CA" / "GSCA"   
@@ -9,7 +9,7 @@ path="/home/knagiredla/gfn_archive/gfn_current/expt_logs"
 max_nodes=9
 min_steps=150_000
 
-echo "env_terrain is $env_terrain"
+# echo "env_terrain is $env_terrain"
 
 if [[ "$env_terrain" == "gap" || "$env_terrain" == "wall" ]]; then
     ext_terrain=1   #True
@@ -17,7 +17,7 @@ else
     ext_terrain=0   #False
 fi 
 
-echo "ext_terrain is $ext_terrain"
+# echo "ext_terrain is $ext_terrain"
 
 experiment_name="${exp_method}_${max_nodes}_${env_terrain}_${start_point}_${env}_${train_steps}"
 

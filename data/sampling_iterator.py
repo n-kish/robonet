@@ -48,7 +48,8 @@ class SamplingIterator(IterableDataset):
         final_sample: bool = False,
         rl_timesteps: int = 100000,
         exp_method: str = "GSCA",
-        min_resource: int = 30000
+        min_resource: int = 30000,
+        env_id: str = "Ant-v5"
     ):
         """Parameters
         ----------
@@ -99,6 +100,7 @@ class SamplingIterator(IterableDataset):
         self.rl_timesteps = rl_timesteps
         self.exp_method = exp_method
         self.min_resource = min_resource
+        self.env_id = env_id
 
         # Slightly weird semantics, but if we're sampling x given some fixed cond info (data)
         # then "offline" now refers to cond info and online to x, so no duplication and we don't end
@@ -226,7 +228,7 @@ class SamplingIterator(IterableDataset):
                     xml_robots = [graph_to_robot_with_init_design(trajs[i]["result"], self.xml_dir, self.log_dir, self.exp_method, self.min_resource, flag="sampler_eval") for i in valid_idcs]
 
                     # ask the task to compute their reward
-                    online_flat_rew, m_is_valid = self.task.compute_flat_rewards(xml_robots, [trajs[i]["result"] for i in valid_idcs], self.rl_timesteps)    # trajs[i]["result"] - gfn graphs
+                    online_flat_rew, m_is_valid = self.task.compute_flat_rewards(xml_robots, [trajs[i]["result"] for i in valid_idcs], self.rl_timesteps, self.env_id)    # trajs[i]["result"] - gfn graphs
                     assert (
                         online_flat_rew.ndim == 2
                     ), "FlatRewards should be (mbsize, n_objectives), even if n_objectives is 1"

@@ -179,7 +179,8 @@ class GFNTrainer:
             hindsight_ratio=self.hps.get("hindsight_ratio", 0.0),
             rl_timesteps=self.hps.get("rl_timesteps", 100_000),
             exp_method=self.hps.get("exp_method", "GSCA"),
-            min_resource=self.hps.get("resource_per_link", 300_000)
+            min_resource=self.hps.get("resource_per_link", 300_000),
+            env_id=self.hps.get("env_id", "Ant-v5")
         )
         for hook in self.sampling_hooks:
             iterator.add_log_hook(hook)
@@ -209,6 +210,7 @@ class GFNTrainer:
             sample_cond_info=self.hps.get("valid_sample_cond_info", True),
             stream=False,
             random_action_prob=self.hps.get("valid_random_action_prob", 0.0),
+            env_id=self.hps.get("env_id", "Ant-v5")
         )
         for hook in self.valid_sampling_hooks:
             iterator.add_log_hook(hook)
@@ -240,7 +242,8 @@ class GFNTrainer:
             init_train_iter=self.hps["num_training_steps"],
             final_sample=True,
             rl_timesteps=self.hps.get("lastbatch_rl_timesteps", 1_000_000),
-            exp_method=self.hps.get("exp_method", "GSCA")
+            exp_method=self.hps.get("exp_method", "GSCA"),
+            env_id=self.hps.get("env_id", "Ant-v5")
         )
         for hook in self.sampling_hooks:
             iterator.add_log_hook(hook)

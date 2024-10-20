@@ -35,6 +35,7 @@ from models import bengio2021flow
 from models.graph_transformer import GraphTransformerGFN
 from train import FlatRewards, GFNTask, GFNTrainer, RewardScalar
 from utils.transforms import thermometer
+from train import cycle
 
 
 from stable_baselines3 import PPO
@@ -45,31 +46,6 @@ import fcntl
 
 POLICY_PATH = ""
 EXP_METHOD = ""
-
-def cycle(it):
-    while True:
-        for i in it:
-            yield i
-
-
-# def get_cur_max_nodes(max_nodes):
-#     iteration = 0
-#     count_dir = os.path.dirname(POLICY_PATH)
-#     try:
-#         with open(os.path.join(count_dir, 'counter.txt'), 'r') as counter_file:
-#                 iteration = int(counter_file.read())
-#                 # print("iteration", iteration)
-#     except FileNotFoundError:
-#         iteration = 0
-#         print("iteration from exception", iteration)
-#     except Exception as e:
-#         print("An error occurred:", e)
-#     if iteration < 100:
-#         cur_max_nodes = np.random.randint(3, max_nodes)
-#     else:
-#         cur_max_nodes = max_nodes
-#     print("cur_max_nodes", cur_max_nodes)
-#     return cur_max_nodes
 
 
 def modify_and_read_file(perf_path, robot_path):
@@ -118,7 +94,7 @@ def write_robots_to_file(robots, filename="robots_list.txt"):
             file.write(f"{robot}\n")
 
 
-def call_train_script(perf_log_path, timesteps):
+def call_train_script(perf_log_path, timesteps, env_id):
 
     env_id = "Ant-v5"
     timesteps = str(timesteps)
@@ -141,7 +117,7 @@ def call_train_script(perf_log_path, timesteps):
         print(f"Standard Error: {result.stderr}")
 
 
-class SEHTask(GFNTask):
+class RoboGenTask(GFNTask):
     """Sets up a task where the reward is computed using a proxy for the binding energy of a molecule to
     Soluble Epoxide Hydrolases.
 
@@ -260,12 +236,12 @@ class SEHTask(GFNTask):
 
 
     # multiprocessing with rew from mujoco simulations
-    def compute_flat_rewards(self, xml_robots, graphs, timesteps) -> Tuple[FlatRewards, Tensor]:
+    def compute_flat_rewards(self, xml_robots, graphs, timesteps, env_id) -> Tuple[FlatRewards, Tensor]:
         eprewmeans = []
-        start_time = time.time()
+        # start_time = time.time()
         write_robots_to_file(xml_robots)
         # print("POLICY_PATH file path", POLICY_PATH)
-        call_train_script(POLICY_PATH, timesteps)
+        call_train_script(POLICY_PATH, timesteps, env_id)
         
         no_return_value = 0.001
         valid_robots = []
@@ -285,13 +261,6 @@ class SEHTask(GFNTask):
                 print(f"Error processing robot {robot}: {inner_e}")
                 eprewmeans.append(no_return_value)
                 valid_robots.append(False)
-        # print("EXITING NOW")
-        # print(eprewmeans)
-
-        # Based on the length of graph in graphs a minimum nodes condition is applied using the following way
-        # for index, graph in enumerate(graphs):
-        #     if len(graph.nodes) < 3:
-        #         eprewmeans[index] = 0.001
 
         eprewmeans = list(np.around(np.array(eprewmeans),1))
         print("eprewmeans", eprewmeans)
@@ -314,7 +283,7 @@ class SEHTask(GFNTask):
         return FlatRewards(preds), is_valid
         
 
-class SEHFragTrainer(GFNTrainer):
+class RoboTrainer(GFNTrainer):
     def default_hps(self) -> Dict[str, Any]:
         return {
             "hostname": socket.gethostname(),
@@ -362,7 +331,7 @@ class SEHFragTrainer(GFNTrainer):
         self.algo = algo(self.env, self.ctx, self.rng, self.hps, max_nodes=self.hps["max_nodes"])
 
     def setup_task(self):
-        self.task = SEHTask(
+        self.task = RoboGenTask(
             dataset=self.training_data,
             temperature_distribution=self.hps["temperature_sample_dist"],
             temperature_parameters=self.hps["temperature_dist_params"],
@@ -428,10 +397,6 @@ class SEHFragTrainer(GFNTrainer):
             "norm": (lambda params: torch.nn.utils.clip_grad_norm_(params, self.clip_grad_param)),
             "none": (lambda x: None),
         }[hps["clip_grad_type"]]
-
-        # saving hyperparameters
-        # git_hash = git.Repo(__file__, search_parent_directories=True).head.object.hexsha[:7]
-        # self.hps["gflownet_git_hash"] = git_hash
 
         os.makedirs(self.hps["log_dir"], exist_ok=True)
         fmt_hps = "\n".join([f"{f'{k}':40}:\t{f'({type(v).__name__})':10}\t{v}" for k, v in sorted(self.hps.items())])
@@ -563,7 +528,7 @@ def main():
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)
     parser.add_argument("--run_path", default="./logs")
     parser.add_argument("--base_xml_path", type=str, default='./assets/base_ant_incline.xml')
-    parser.add_argument("--env", type=str, default='ant')
+    parser.add_argument("--env_id", type=str, default='Ant-v5')
     parser.add_argument("--start_point", type=str, default='base')
     parser.add_argument("--env_terrain", type=str, default='wall')
     parser.add_argument("--terrain_from_external_source", type=int, default=1)
@@ -649,10 +614,11 @@ def main():
         "resource_per_link":f"{args.min_steps}",
         "init_data_iters": 10,
         "seed": int(f"{args.seed}"),
-        "offline_ratio": 0.5
+        "offline_ratio": 0.5,
+        "env_id": f"{args.env_id}"
     }
     
-    trial = SEHFragTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
+    trial = RoboTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
 
 
     trial.print_every = 1

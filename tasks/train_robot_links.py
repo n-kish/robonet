@@ -204,7 +204,7 @@ class SEHTask(GFNTask):
 
 
     # multiprocessing with rew from mujoco simulations
-    def compute_flat_rewards(self, xml_robots, graphs, timesteps) -> Tuple[FlatRewards, Tensor]:
+    def compute_flat_rewards(self, xml_robots, graphs, timesteps, env_id) -> Tuple[FlatRewards, Tensor]:
         pred_rews = []
         start_time = time.time()
 
