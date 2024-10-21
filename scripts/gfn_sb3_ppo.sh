@@ -2,8 +2,8 @@
 
 # Read the list of robots from the file
 
-if [ "$#" -ne 5 ]; then
-    echo "Usage: $0 <robot_list> <perf_log_path> <env_id> <total_timesteps> <scripts>"
+if [ "$#" -ne 6 ]; then
+    echo "Usage: $0 <robot_list> <perf_log_path> <env_id> <total_timesteps> <scripts> <ctrl_cost_weight>"
     exit 1
 fi
 
@@ -13,9 +13,12 @@ perf_log_path="$2"
 env_id="$3"
 total_timesteps="$4"
 scripts="$5"
-
+ctrl_cost_weight="$6"
 # echo "This is $robots_list"
 # echo "Perf log path is $perf_log_path"
+
+# echo $ctrl_cost_weight
+
 
 output_dir="$perf_log_path/output_files"
 mkdir -p "$output_dir"
@@ -29,7 +32,7 @@ while IFS= read -r robot; do
     sed "s|__OUTPUT_PATH__|$output_file|g" ./scripts/gfn_sb3_sbatch.sh > "$tmp_slurm_script"
      
     # Submit the job
-    job_id=$(sbatch "$tmp_slurm_script" "$scripts" --xml_file_path "$robot" --perf_log_path "$perf_log_path" --env_id "$env_id" --total_timesteps "$total_timesteps" | awk '{print $4}')
+    job_id=$(sbatch "$tmp_slurm_script" "$scripts" --xml_file_path "$robot" --perf_log_path "$perf_log_path" --env_id "$env_id" --total_timesteps "$total_timesteps" --ctrl_cost_weight "$ctrl_cost_weight" | awk '{print $4}')
     # echo "Job id is $job_id"
     job_ids+=($job_id)
 

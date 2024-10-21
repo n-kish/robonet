@@ -94,9 +94,8 @@ def write_robots_to_file(robots, filename="robots_list.txt"):
             file.write(f"{robot}\n")
 
 
-def call_train_script(perf_log_path, timesteps, env_id):
+def call_train_script(perf_log_path, timesteps, env_id, ctrl_cost_weight):
 
-    env_id = "Ant-v5"
     timesteps = str(timesteps)
     # print("timesteps", timesteps, type(timesteps))
     ppo_script = f"python ./tasks/ppo_sb3_{EXP_METHOD}.py"
@@ -106,8 +105,9 @@ def call_train_script(perf_log_path, timesteps, env_id):
     args3= f"{env_id}"
     args4= f"{timesteps}"
     args5= f"{ppo_script}"
+    args6= f"{ctrl_cost_weight}"
     
-    result = subprocess.run(['bash', './scripts/gfn_sb3_ppo.sh', args1, args2, args3, args4, args5], check=True)
+    result = subprocess.run(['bash', './scripts/gfn_sb3_ppo.sh', args1, args2, args3, args4, args5, args6], check=True)
     
     if result.returncode == 0:
         pass
@@ -136,6 +136,7 @@ class RoboGenTask(GFNTask):
         num_thermometer_dim: int,
         rng: np.random.Generator = None,
         wrap_model: Callable[[nn.Module], nn.Module] = None,
+        ctrl_cost_weight: float = 1.0
     ):
         self._wrap_model = wrap_model
         self.rng = rng
@@ -145,6 +146,7 @@ class RoboGenTask(GFNTask):
         self.temperature_dist_params = temperature_parameters
         self.num_thermometer_dim = num_thermometer_dim
         self.log_dir = log_dir
+        self.ctrl_cost_weight = ctrl_cost_weight
 
     def flat_reward_transform(self, y: Union[float, Tensor]) -> FlatRewards:
         return FlatRewards(torch.as_tensor(y) / 8)
@@ -225,7 +227,7 @@ class RoboGenTask(GFNTask):
         # start_time = time.time()
         write_robots_to_file(xml_robots)
         # print("POLICY_PATH file path", POLICY_PATH)
-        call_train_script(POLICY_PATH, timesteps, env_id)
+        call_train_script(POLICY_PATH, timesteps, env_id, self.ctrl_cost_weight)
         
         no_return_value = 0.001
         valid_robots = []
@@ -247,6 +249,10 @@ class RoboGenTask(GFNTask):
 
         eprewmeans = list(np.around(np.array(eprewmeans),1))
         print("eprewmeans", eprewmeans)
+
+        #keep track of the number of invalid robots
+        num_invalid_robots = sum(1 for v in valid_robots if not v)
+        print("Number of invalid robots:", num_invalid_robots)
 
         valid_eprewmeans = [e for e, v in zip(eprewmeans, valid_robots) if v]
         # print("valid_eprewmeans", valid_eprewmeans)
@@ -273,8 +279,7 @@ class RoboTrainer(GFNTrainer):
             "bootstrap_own_reward": False,
             "learning_rate": 1e-4,
             "Z_learning_rate": 1e-3,
-            "global_batch_size": 25,
-            "num_emb": 256,
+            "num_emb": 128,
             "num_layers": 4,
             "tb_epsilon": None,
             "tb_p_b_is_parameterized": False,
@@ -296,8 +301,6 @@ class RoboTrainer(GFNTrainer):
             "max_nodes": 9,
             "num_thermometer_dim": 32,
             "use_replay_buffer": True,           #used to be False, changed to True - Kishan
-            "replay_buffer_size": 10000,         # changed from 10_000 to 5_000
-            "replay_buffer_warmup": 10000,
             "mp_pickle_messages": False,
             "algo": "TB",
             "num_final_gen_steps": 1
@@ -321,7 +324,8 @@ class RoboTrainer(GFNTrainer):
             rng=self.rng,
             num_thermometer_dim=self.hps["num_thermometer_dim"],
             wrap_model=self._wrap_for_mp,
-            log_dir=self.hps["log_dir"]
+            log_dir=self.hps["log_dir"],
+            ctrl_cost_weight=self.hps["ctrl_cost_weight"]
         )
 
     def setup_model(self):
@@ -402,7 +406,7 @@ class RoboTrainer(GFNTrainer):
                 b.data.mul_(self.sampling_tau).add_(a.data * (1 - self.sampling_tau))
     
     def update_max_nodes(self, iteration):
-        if iteration < 150:
+        if iteration < int(self.hps["init_data_iters"]):
             base_max_nodes = self.hps["max_nodes"] + 1
             new_max_nodes = 3 + (iteration % (base_max_nodes - 3))
         else:
@@ -505,8 +509,10 @@ def main():
     parser.add_argument("--name", help='experiment_name', type=str, default='test')
     parser.add_argument("--exp_method", help='experiment method', type=str, default='naive')
     parser.add_argument("--rl_timesteps", help='rl_timesteps', type=int, default=4_000)
-    parser.add_argument("--min_steps", help='min steps for gsca', type=int, default=30000)
+    parser.add_argument("--min_steps", help='min steps for gsca', type=int, default=3000)
     parser.add_argument("--max_gfn_nodes", help='graph nodes', type=int, default=10)
+    parser.add_argument("--offline_data_iters", help='iterations count for offline data collection', type=int, default=150)
+    parser.add_argument("--global_batch_size", help='batch size per iteration', default=32)
     parser.add_argument("--lastbatch_rl_timesteps", help='lastbatch_rl_timesteps', type=int, default=1_000_000)
 
     args = parser.parse_args()
@@ -524,7 +530,7 @@ def main():
     project="robonet_tests", 
     name=f"{args.name}",
     notes="RBN+mujoco+sb3",
-    mode="online",  # "disabled" or "online"
+    mode="disabled",  # "disabled" or "online"
     tags=["1k iter", "beta_decay", "randacts0"]
     )
 
@@ -582,10 +588,15 @@ def main():
         "exp_method":f"{args.exp_method}",    
         "env_terrain":f"{args.env_terrain}",
         "resource_per_link":f"{args.min_steps}",
-        "init_data_iters": 10,
+        "init_data_iters": args.offline_data_iters,
         "seed": int(f"{args.seed}"),
         "offline_ratio": 0.5,
-        "env_id": f"{args.env_id}"
+        "env_id": f"{args.env_id}",
+        "epochs": 25,
+        "global_batch_size": args.global_batch_size,
+        "ctrl_cost_weight": 0.5,
+        "replay_buffer_size": int(args.offline_data_iters)*int(args.global_batch_size),
+        "replay_buffer_warmup": int(args.offline_data_iters)*int(args.global_batch_size),
     }
     
     trial = RoboTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))

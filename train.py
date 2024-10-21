@@ -258,7 +258,7 @@ class GFNTrainer:
     def train_batch(self, batch: gd.Batch, epoch_idx: int, batch_idx: int, train_it: int) -> Dict[str, Any]:
         start = time.time()
         iter = 0
-        while iter < 50:       # this is actual epoch length
+        while iter < self.hps["epochs"]:       # this is actual epoch length
             try:
                 loss, info = self.algo.compute_batch_losses(self.model, batch)
                 if not torch.isfinite(loss):

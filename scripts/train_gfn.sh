@@ -1,14 +1,14 @@
 
 seed=134
-env="walker"
-env_id="Walker2d-v5"
+env="ant"
+env_id="Ant-v5"
 train_steps=300_000
 start_point="base"    # "orig" / "base"
-exp_method="GSCA"      # "naive" / "GS" / "CA" / "GSCA"   
+exp_method="linearscaling"      # "naive" / "GS" / "CA" / "GSCA"   
 env_terrain="flat"      # "flat" / "incline" / "gap" / "wall"
 path="/home/knagiredla/robonet/logs"
 max_nodes=10
-min_steps=30_000
+min_steps=20_000
 
 # echo "env_terrain is $env_terrain"
 
@@ -20,7 +20,7 @@ fi
 
 # echo "ext_terrain is $ext_terrain"
 
-experiment_name="${exp_method}_${max_nodes}_${env_terrain}_${start_point}_${env}_${train_steps}"
+experiment_name="${exp_method}_${max_nodes}_${env_terrain}_${start_point}_${env}_${min_steps}"
 
 scripts="python ./tasks/train_gfn.py"  
 

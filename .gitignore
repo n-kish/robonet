@@ -1,6 +1,7 @@
 # Logs
 *.log
 *.wandb
+*.output
 
 # pycache
 tasks/__pycache__/

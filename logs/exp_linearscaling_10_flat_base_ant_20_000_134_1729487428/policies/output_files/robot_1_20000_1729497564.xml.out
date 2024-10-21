@@ -1,0 +1,16 @@
+time_steps 20000
+Using cpu device
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+env.observation_space Box(-inf, inf, (33,), float64)
+self.keys, shapes, dtypes [None] {None: (33,)} {None: dtype('float64')}
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 7.1      |
+|    ep_rew_mean     | -0.469   |
+| time/              |          |
+|    fps             | 1329     |
+|    iterations      | 1        |
+|    time_elapsed    | 1        |
+|    total_timesteps | 2048     |
+---------------------------------

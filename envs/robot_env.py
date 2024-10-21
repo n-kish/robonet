@@ -1208,16 +1208,19 @@ def graph_to_robot_with_init_design(graph, xml_dir, log_dir, exp_method, min_res
 
     # Allowed values for length_ratio, size, and gear
 
-    if exp_method in ["CA", "GSCA"]:
-        values1 = [1, 0.9]  # For length_ratio, size, gear
-        values2 = [1, 0.75]  # For resource
+    if exp_method in ["CA", "GSCA", "linearscaling"]:
+        values1 = [1, 0.9, 0.8, 1.1, 1.2]  # For length_ratio, size, gear
+        if exp_method in ["linearscaling"]:
+            values2 = [1]  # For resource
+        else:
+            values2 = [1, 0.75, 0.5, 1.25, 1.5]
 
 
         # values1 = [1, 0.9, 0.8, 1.1, 1.2]  # For length_ratio, size, gear
         # values2 = [1, 0.75, 0.5, 1.25, 1.5]  # For resource
 
         # Generate all possible combinations of (length_ratio, size, gear) and (resource)
-        combinations = list(itertools.product(values1, values1, values1, values2))
+        combinations = list(itertools.product(values1, values1, values2))
 
         # Create the node_map with unique combinations
         node_map = {
@@ -1344,7 +1347,7 @@ def graph_to_robot_with_init_design(graph, xml_dir, log_dir, exp_method, min_res
         # gear = child_node_mods['gear']
         xml_robot.redesign_bodies_with_init_design(body_list, child, attach_loc, geom_type, parent_body, length, size)
 
-        if exp_method in ["CA", "GSCA"]:
+        if exp_method in ["CA", "GSCA", "linearscaling"]:
             resource_factor = child_node_mods['resource']
             # print("resource_factor", resource_factor, type(resource_factor))
             # print("min_resource", min_resource, type(min_resource))
@@ -1354,14 +1357,17 @@ def graph_to_robot_with_init_design(graph, xml_dir, log_dir, exp_method, min_res
     os.makedirs('out', exist_ok=True)
     postfix = int(time.time()) + random.randint(0,10000)
     
-    if exp_method in ["CA", "GSCA"]:
-        if flag == "sampler_eval":
-            # print("entered flag smapler_eval")
-            xml_robot.write_xml(os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{str(total_resource)}_{postfix}.xml'))
-        return os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{str(total_resource)}_{postfix}.xml')
-    else:
-        xml_robot.write_xml(os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{postfix}.xml'))
-        return os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{postfix}.xml')
+    # if exp_method in ["CA", "GSCA"]:
+    #     if flag == "sampler_eval":
+    #         # print("entered flag smapler_eval")
+    #         xml_robot.write_xml(os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{str(total_resource)}_{postfix}.xml'))
+    #     return os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{str(total_resource)}_{postfix}.xml')
+    # else:
+    # xml_robot.write_xml(os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{postfix}.xml'))
+    # return os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{postfix}.xml')
+
+    xml_robot.write_xml(os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{str(total_resource)}_{postfix}.xml'))
+    return os.path.join(os.path.abspath(log_dir), f'robot_{len(nodes)}_{str(total_resource)}_{postfix}.xml')
 
 
 def run(args2):

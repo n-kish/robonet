@@ -1,0 +1,60 @@
+time_steps 120000
+Using cpu device
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+env.observation_space Box(-inf, inf, (73,), float64)
+self.keys, shapes, dtypes [None] {None: (73,)} {None: dtype('float64')}
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 9.95     |
+|    ep_rew_mean     | -10.3    |
+| time/              |          |
+|    fps             | 1154     |
+|    iterations      | 1        |
+|    time_elapsed    | 1        |
+|    total_timesteps | 2048     |
+---------------------------------
+-------------------------------------------
+| rollout/                |               |
+|    ep_len_mean          | 10.6          |
+|    ep_rew_mean          | -11.9         |
+| time/                   |               |
+|    fps                  | 1006          |
+|    iterations           | 2             |
+|    time_elapsed         | 4             |
+|    total_timesteps      | 4096          |
+| train/                  |               |
+|    approx_kl            | 0.00069560285 |
+|    clip_fraction        | 0.00234       |
+|    clip_range           | 0.1           |
+|    entropy_loss         | -9.93         |
+|    explained_variance   | -0.00534      |
+|    learning_rate        | 0.0001        |
+|    loss                 | 38.4          |
+|    n_updates            | 10            |
+|    policy_gradient_loss | -0.00404      |
+|    std                  | 1             |
+|    value_loss           | 78.1          |
+-------------------------------------------
+-------------------------------------------
+| rollout/                |               |
+|    ep_len_mean          | 11            |
+|    ep_rew_mean          | -12.3         |
+| time/                   |               |
+|    fps                  | 962           |
+|    iterations           | 3             |
+|    time_elapsed         | 6             |
+|    total_timesteps      | 6144          |
+| train/                  |               |
+|    approx_kl            | 0.00053933455 |
+|    clip_fraction        | 0.00112       |
+|    clip_range           | 0.1           |
+|    entropy_loss         | -9.93         |
+|    explained_variance   | -0.0116       |
+|    learning_rate        | 0.0001        |
+|    loss                 | 42.8          |
+|    n_updates            | 20            |
+|    policy_gradient_loss | -0.0029       |
+|    std                  | 1             |
+|    value_loss           | 86.6          |
+-------------------------------------------

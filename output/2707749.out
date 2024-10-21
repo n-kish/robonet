@@ -1,0 +1,263 @@
+Env: ./assets/base_ant_flat.xml
+self.action_map [(0, 0), (0, 1), (0, 2), (0, 3), (1, 0), (1, 1), (1, 2), (1, 3), (2, 0), (2, 1), (2, 2), (2, 3), (3, 0), (3, 1), (3, 2), (3, 3), (4, 0), (4, 1), (4, 2), (4, 3), (5, 0), (5, 1), (5, 2), (5, 3), (6, 0), (6, 1), (6, 2), (6, 3), (7, 0), (7, 1), (7, 2), (7, 3), (8, 0), (8, 1), (8, 2), (8, 3), (9, 0), (9, 1), (9, 2), (9, 3), (10, 0), (10, 1), (10, 2), (10, 3), (11, 0), (11, 1), (11, 2), (11, 3), (12, 0), (12, 1), (12, 2), (12, 3), (13, 0), (13, 1), (13, 2), (13, 3), (14, 0), (14, 1), (14, 2), (14, 3), (15, 0), (15, 1), (15, 2), (15, 3), (16, 0), (16, 1), (16, 2), (16, 3), (17, 0), (17, 1), (17, 2), (17, 3), (18, 0), (18, 1), (18, 2), (18, 3), (19, 0), (19, 1), (19, 2), (19, 3), (20, 0), (20, 1), (20, 2), (20, 3), (21, 0), (21, 1), (21, 2), (21, 3), (22, 0), (22, 1), (22, 2), (22, 3), (23, 0), (23, 1), (23, 2), (23, 3), (24, 0), (24, 1), (24, 2), (24, 3)]
+
+
+Hyperparameters:
+--------------------------------------------------
+Z_learning_rate                         :	(float)   	0.001
+Z_lr_decay                              :	(int)     	50000
+adam_eps                                :	(float)   	1e-08
+algo                                    :	(str)     	TB
+bootstrap_own_reward                    :	(bool)    	False
+clip_grad_param                         :	(int)     	10
+clip_grad_type                          :	(str)     	norm
+ctrl_cost_weight                        :	(float)   	0.5
+env                                     :	(str)     	ant
+env_id                                  :	(str)     	Ant-v5
+env_terrain                             :	(str)     	flat
+epochs                                  :	(int)     	25
+exp_method                              :	(str)     	linearscaling
+global_batch_size                       :	(int)     	32
+gum_beta                                :	(float)   	0.0
+hostname                                :	(str)     	cpu-02
+illegal_action_logreward                :	(int)     	-75
+init_data_iters                         :	(int)     	150
+lastbatch_rl_timesteps                  :	(str)     	1000000
+learning_rate                           :	(float)   	0.0001
+log_dir                                 :	(str)     	/home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428
+lr_decay                                :	(int)     	20000
+max_nodes                               :	(int)     	10
+momentum                                :	(float)   	0.9
+mp_pickle_messages                      :	(bool)    	False
+num_data_loader_workers                 :	(int)     	0
+num_emb                                 :	(int)     	128
+num_final_gen_steps                     :	(int)     	1
+num_layers                              :	(int)     	4
+num_thermometer_dim                     :	(int)     	32
+num_training_steps                      :	(int)     	1000
+offline_ratio                           :	(float)   	0.5
+overwrite_existing_exp                  :	(bool)    	True
+qm9_h5_path                             :	(str)     	/data/chem/qm9/qm9.h5
+random_action_prob                      :	(int)     	0
+replay_buffer_size                      :	(int)     	4800
+replay_buffer_warmup                    :	(int)     	4800
+resource_per_link                       :	(str)     	20000
+reward_loss_multiplier                  :	(int)     	1
+rl_timesteps                            :	(str)     	300000
+sampling_tau                            :	(float)   	0.99
+seed                                    :	(int)     	134
+start_point                             :	(str)     	base
+tb_epsilon                              :	(NoneType)	None
+tb_p_b_is_parameterized                 :	(bool)    	False
+temperature_dist_params                 :	(tuple)   	(0.0, 64.0)
+temperature_sample_dist                 :	(str)     	uniform
+use_replay_buffer                       :	(bool)    	True
+valid_random_action_prob                :	(float)   	0.0
+validate_every                          :	(int)     	250
+weight_decay                            :	(float)   	1e-08
+xml_path                                :	(str)     	/home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/xmlrobots
+--------------------------------------------------
+
+
+---Built training data loader in 0.0008103847503662109 seconds ---
+21/10/2024 16:10:28 - INFO - logger - Starting training
+Updated max_nodes to 4 at iteration 1
+iteration from exception 0
+gum_beta 10.0
+Received graph <[0], [], [] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_1_20000_1729493475.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (1, 3)], [2, 0, 2, 1, 0, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729487667.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (2, 3)], [2, 1, 1, 0, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729489076.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (1, 3)], [2, 2, 1, 0, 3, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729494918.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (1, 3)], [3, 3, 1, 0, 0, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729490393.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (0, 3)], [1, 1, 0, 2, 2, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729491356.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (2, 3)], [1, 0, 3, 2, 2, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729492258.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 3), (1, 2)], [2, 3, 3, 2, 2, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729495107.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (2, 3)], [2, 1, 0, 1, 3, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729487873.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (2, 3)], [3, 3, 2, 2, 3, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729488981.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (0, 3)], [2, 0, 0, 2, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729488853.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (1, 3)], [3, 2, 3, 0, 1, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729490780.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (2, 3)], [0, 1, 0, 0, 2, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729493456.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (2, 3)], [1, 3, 0, 1, 0, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729492603.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (2, 3)], [3, 2, 2, 0, 1, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729491298.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 3), (1, 2)], [2, 1, 0, 1, 3, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729489821.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (2, 3)], [0, 2, 3, 1, 1, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729490534.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (0, 3)], [3, 3, 2, 1, 3, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729491453.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (1, 3)], [3, 0, 0, 2, 3, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729496659.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 3), (1, 2)], [0, 1, 3, 2, 2, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729497345.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 3), (1, 2)], [2, 1, 2, 1, 2, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729493291.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (2, 3)], [3, 0, 2, 3, 0, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729494155.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (2, 3)], [3, 1, 0, 2, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729493635.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (1, 3)], [3, 3, 1, 0, 1, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729493615.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (1, 3)], [1, 0, 2, 1, 2, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729494373.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (1, 3)], [0, 0, 3, 1, 0, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729492372.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (1, 2), (1, 3)], [3, 3, 2, 1, 3, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729489531.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (2, 3)], [0, 1, 2, 2, 3, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729496323.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (0, 3)], [2, 1, 3, 2, 0, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729491233.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 3), (1, 2)], [2, 1, 2, 1, 1, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729488831.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (0, 3)], [1, 2, 1, 0, 3, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729495778.xml
+Received graph <[0, 1, 2, 3], [(0, 1), (0, 2), (2, 3)], [2, 1, 1, 1, 2, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_4_80000_1729490065.xml
+eprewmeans [241.0, 0.0, 0.0, 216.7, 203.8, 211.2, 208.9, 199.0, 215.5, 195.1, 207.4, 232.6, 201.0, 220.2, 218.7, 202.9, 197.0, 197.3, 207.6, 196.3, 208.1, 217.3, 233.3, 210.4, 199.2, 201.5, 204.6, 0.0, 208.5, 205.6, 217.7, 0.0]
+Number of invalid robots: 0
+Max value & mean, median, std.dev 241.0 183.7 206.5 70.2534385279468
+21/10/2024 16:12:30 - INFO - logger - iteration 1 : warming up replay buffer 32/4800
+Updated max_nodes to 5 at iteration 2
+gum_beta 10.0
+Received graph <[0], [], [] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_1_20000_1729493474.xml
+Received graph <[0], [], [] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_1_20000_1729488013.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (2, 3), (3, 4)], [2, 1, 2, 2, 0, 1, 1, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729494518.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 3), (1, 2), (3, 4)], [3, 1, 2, 2, 0, 2, 1, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729488173.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 4), (1, 2), (2, 3)], [2, 2, 2, 3, 1, 0, 2, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729495062.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 3), (0, 4), (1, 2)], [0, 1, 3, 1, 1, 2, 0, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729494367.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (2, 3), (3, 4)], [2, 3, 0, 1, 3, 3, 0, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729493919.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (2, 3), (3, 4)], [1, 3, 3, 2, 3, 0, 0, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729490985.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (0, 3), (2, 4)], [0, 2, 2, 3, 1, 1, 1, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729493019.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 4), (1, 2), (1, 3)], [0, 1, 1, 2, 2, 2, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729490991.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (2, 3), (3, 4)], [0, 2, 2, 3, 2, 2, 3, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729496319.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 4), (1, 2), (1, 3)], [0, 3, 0, 1, 0, 0, 1, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729488914.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 4), (1, 2), (2, 3)], [3, 0, 1, 1, 2, 2, 3, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729488745.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 3), (1, 2), (3, 4)], [3, 0, 2, 1, 1, 3, 2, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729494376.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (2, 3), (2, 4)], [0, 0, 2, 3, 0, 2, 2, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729489988.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (1, 3), (2, 4)], [2, 2, 3, 3, 0, 1, 2, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729487750.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (2, 3), (3, 4)], [2, 0, 1, 3, 1, 3, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729491733.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (1, 3), (3, 4)], [1, 2, 0, 1, 3, 3, 2, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729496622.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (1, 3), (3, 4)], [0, 2, 0, 0, 3, 0, 1, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729490531.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (2, 3), (2, 4)], [1, 0, 0, 2, 3, 1, 1, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729488636.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (0, 3), (0, 4)], [1, 1, 3, 0, 2, 0, 3, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729495099.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 3), (0, 4), (1, 2)], [3, 1, 2, 1, 0, 1, 1, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729490482.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (1, 3), (3, 4)], [1, 2, 1, 0, 2, 2, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729488082.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (0, 3), (0, 4)], [0, 2, 3, 3, 1, 2, 2, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729494543.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (1, 3), (2, 4)], [0, 3, 2, 1, 3, 3, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729488939.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (1, 3), (2, 4)], [0, 2, 3, 2, 2, 0, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729488233.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (2, 3), (2, 4)], [0, 1, 2, 1, 1, 2, 0, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729496840.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (1, 4), (2, 3)], [3, 1, 2, 1, 0, 3, 2, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729496280.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (1, 4), (2, 3)], [1, 2, 0, 1, 2, 3, 3, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729487915.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (1, 3), (2, 4)], [0, 3, 3, 3, 2, 1, 0, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729494853.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (0, 2), (2, 3), (2, 4)], [0, 1, 2, 0, 1, 1, 2, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729490238.xml
+Received graph <[0, 1, 2, 3, 4], [(0, 1), (1, 2), (1, 3), (1, 4)], [1, 1, 2, 2, 0, 2, 3, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_5_100000_1729494716.xml
+eprewmeans [205.9, 206.1, 197.5, 202.7, 200.6, 204.7, 204.8, 207.4, 202.4, 0.0, 201.8, 221.8, 212.9, 209.4, 0.0, 197.6, 203.3, 207.3, 205.8, 197.5, 202.5, 204.9, 200.8, 202.5, 213.0, 204.9, 217.0, 0.0, 213.1, 0.0, 205.6, 202.5]
+Number of invalid robots: 0
+Max value & mean, median, std.dev 221.8 179.884375 204.0 68.19425429139449
+21/10/2024 16:14:54 - INFO - logger - iteration 2 : warming up replay buffer 64/4800
+Updated max_nodes to 6 at iteration 3
+gum_beta 10.0
+Received graph <[0], [], [] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_1_20000_1729497674.xml
+Received graph <[0], [], [] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_1_20000_1729489962.xml
+Received graph <[0], [], [] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_1_20000_1729493719.xml
+Received graph <[0], [], [] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_1_20000_1729496580.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (0, 5), (1, 4), (2, 3)], [3, 2, 1, 0, 1, 3, 1, 3, 2, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729496990.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 3), (1, 2), (1, 4), (2, 5)], [1, 1, 0, 3, 1, 2, 0, 1, 1, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729494443.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (2, 3), (3, 4), (3, 5)], [3, 3, 3, 0, 3, 1, 2, 1, 0, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729492533.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (0, 3), (0, 5), (3, 4)], [2, 1, 3, 0, 0, 1, 2, 0, 3, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729492375.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (0, 4), (2, 3), (2, 5)], [2, 2, 2, 1, 3, 0, 1, 0, 0, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729492819.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 3), (0, 4), (1, 2), (3, 5)], [0, 0, 3, 3, 1, 2, 1, 1, 1, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729488883.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)], [2, 0, 1, 3, 1, 0, 2, 0, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729489582.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (1, 2), (1, 3), (2, 4), (3, 5)], [3, 1, 1, 3, 0, 1, 2, 1, 1, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729496079.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (0, 5), (1, 4), (2, 3)], [0, 2, 3, 2, 0, 1, 3, 0, 0, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729488907.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (1, 3), (2, 5), (3, 4)], [1, 3, 1, 1, 0, 2, 0, 2, 1, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729490160.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (2, 3), (2, 4), (2, 5)], [3, 2, 0, 2, 1, 3, 3, 0, 1, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729494356.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 4), (0, 5), (1, 2), (1, 3)], [0, 1, 1, 0, 0, 3, 0, 2, 3, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729495136.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 3), (0, 5), (1, 2), (1, 4)], [2, 2, 2, 3, 1, 3, 2, 3, 1, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729495884.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (1, 2), (1, 5), (2, 3), (2, 4)], [1, 0, 0, 3, 2, 2, 3, 3, 2, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729493714.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (1, 2), (1, 3), (1, 4), (4, 5)], [1, 0, 0, 1, 3, 1, 2, 2, 1, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729494979.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (1, 3), (1, 4), (4, 5)], [3, 0, 2, 2, 3, 1, 2, 1, 2, 0] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729496932.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 5), (1, 2), (1, 4), (2, 3)], [1, 0, 0, 1, 3, 3, 2, 1, 2, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729488747.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 3), (0, 4), (0, 5), (1, 2)], [1, 0, 0, 3, 3, 3, 2, 2, 2, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729493150.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (0, 3), (0, 5), (3, 4)], [1, 1, 1, 3, 3, 0, 2, 2, 0, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729497211.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (0, 3), (2, 5), (3, 4)], [2, 2, 1, 3, 1, 0, 3, 0, 3, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729488472.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (1, 2), (1, 3), (2, 4), (4, 5)], [0, 1, 2, 1, 3, 0, 2, 3, 2, 1] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729490385.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 3), (0, 4), (1, 2), (3, 5)], [3, 1, 0, 1, 3, 1, 2, 1, 2, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729493083.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 2), (0, 5), (1, 3), (1, 4)], [3, 0, 2, 1, 0, 1, 3, 1, 3, 2] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729496392.xml
+Received graph <[0, 1, 2, 3, 4, 5], [(0, 1), (0, 3), (1, 2), (3, 4), (4, 5)], [3, 3, 2, 1, 2, 1, 2, 0, 3, 3] <class 'envs.graph_building_env.Graph'>
+ $$$$$$$ XML robot: Success /home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_20_000_134_1729487428/train/robot_6_120000_1729493339.xml
+Received graph 

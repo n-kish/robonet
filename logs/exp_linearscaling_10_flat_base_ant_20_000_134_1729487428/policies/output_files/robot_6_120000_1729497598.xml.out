@@ -1,0 +1,38 @@
+time_steps 120000
+Using cpu device
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+env.observation_space Box(-inf, inf, (73,), float64)
+self.keys, shapes, dtypes [None] {None: (73,)} {None: dtype('float64')}
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 8.63     |
+|    ep_rew_mean     | -7.35    |
+| time/              |          |
+|    fps             | 1174     |
+|    iterations      | 1        |
+|    time_elapsed    | 1        |
+|    total_timesteps | 2048     |
+---------------------------------
+------------------------------------------
+| rollout/                |              |
+|    ep_len_mean          | 8.89         |
+|    ep_rew_mean          | -7.83        |
+| time/                   |              |
+|    fps                  | 1010         |
+|    iterations           | 2            |
+|    time_elapsed         | 4            |
+|    total_timesteps      | 4096         |
+| train/                  |              |
+|    approx_kl            | 0.0007745724 |
+|    clip_fraction        | 0.00322      |
+|    clip_range           | 0.1          |
+|    entropy_loss         | -9.93        |
+|    explained_variance   | -0.00956     |
+|    learning_rate        | 0.0001       |
+|    loss                 | 12.8         |
+|    n_updates            | 10           |
+|    policy_gradient_loss | -0.00436     |
+|    std                  | 0.999        |
+|    value_loss           | 26.6         |
+------------------------------------------

@@ -18,14 +18,3 @@ IMPORTANT: You may need to close and restart your shell after running 'conda ini
 
 
 wandb: Currently logged in as: kishan-nagiredla. Use `wandb login --relogin` to force relogin
-wandb: wandb version 0.18.5 is available!  To upgrade, please run:
-wandb:  $ pip install wandb --upgrade
-wandb: Tracking run with wandb version 0.16.3
-wandb: Run data is saved locally in /home/knagiredla/robonet/wandb/run-20241021_100618-01s7scl1
-wandb: Run `wandb offline` to turn off syncing.
-wandb: Syncing run GSCA_10_flat_base_walker_300_000
-wandb: ⭐️ View project at https://wandb.ai/kishan-nagiredla/robonet_tests
-wandb: 🚀 View run at https://wandb.ai/kishan-nagiredla/robonet_tests/runs/01s7scl1
-slurmstepd: error: *** JOB 2707101 ON cpu-05 CANCELLED AT 2024-10-21T10:09:13 ***
-slurmstepd: error: *** JOB 2707090 ON cpu-05 CANCELLED AT 2024-10-21T10:09:21 ***
-slurmstepd: error: *** JOB 2707083 ON cpu-05 CANCELLED AT 2024-10-21T10:09:26 ***
