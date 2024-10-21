@@ -22,7 +22,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
     parser.add_argument('--env_id', help='environment ID', default=None)
-    parser.add_argument('--total_timesteps', help='maximum step size', type=int)
+    parser.add_argument('--min_timesteps', help='maximum step size', type=int)
     # parser.add_argument('--network', help='path for data')
     parser.add_argument('--xml_file_path', help='path for xml')
     parser.add_argument('--perf_log_path', help='path for xml')
@@ -38,7 +38,7 @@ def main():
     # vec_env = DummyVecEnv([lambda: gym.make(args.env_id, xml_file=args.xml_file_path, render_mode="rgb_array")])
     
     env_id = args.env_id
-    min_steps = int(args.total_timesteps)
+    min_steps = int(args.min_timesteps)
     robot = args.xml_file_path
 
     # Resource Allocation strategy
@@ -55,12 +55,12 @@ def main():
     # time_scaler = node_count * 0.1
     cost_scaler = 10* math.log((time_steps+1))
 
-    # calc_timesteps = min_steps + (time_scaler * min_steps)            #Resource allocation
+    calc_timesteps = min_steps*node_count         #Resource allocation
 
     policy_kwargs = dict(
         net_arch=[128, 128, 128, 128]
     )
-    print("time_steps", time_steps)
+    # print("time_steps", time_steps)
 
     env = gym.make(env_id, ctrl_cost_weight=float(args.ctrl_cost_weight), xml_file=robot)
     # Instantiate the model
@@ -69,7 +69,7 @@ def main():
     # model.set_logger(new_logger)
 
     # Train the model
-    _, full_ep_rew_list = model.learn(total_timesteps=time_steps)
+    _, full_ep_rew_list = model.learn(total_timesteps=calc_timesteps)
     # mean_ep_reward = np.mean(ep_rew_list)
     last_rew = full_ep_rew_list[-1]
 
@@ -107,18 +107,18 @@ def main():
         errBool = True
     # elif mean_agg_reward < 0:
     #     mean_agg_reward = 0.00019
-    with open(os.path.join(config_name, 'ppo_err.txt'), 'a') as f_err:
-        # Acquire an exclusive lock on the file
-        fcntl.flock(f_err, fcntl.LOCK_EX)
-        try:
-            # Write the dictionary entry to the file as a JSON string
-            if errBool:
-                f_err.write(f"Another failed robot:  + {robot}")
-            entry = {args.xml_file_path: mean_agg_reward}
-            f_err.write(f"{entry} + type: {type(mean_agg_reward)}\n")
-        finally:
-            # Release the lock
-            fcntl.flock(f_err, fcntl.LOCK_UN)
+        with open(os.path.join(config_name, 'ppo_err.txt'), 'a') as f_err:
+            # Acquire an exclusive lock on the file
+            fcntl.flock(f_err, fcntl.LOCK_EX)
+            try:
+                # Write the dictionary entry to the file as a JSON string
+                if errBool:
+                    f_err.write(f"Another failed robot:  + {robot}")
+                # entry = {args.xml_file_path: mean_agg_reward}
+                # f_err.write(f"{entry} + type: {type(mean_agg_reward)}\n")
+            finally:
+                # Release the lock
+                fcntl.flock(f_err, fcntl.LOCK_UN)
 
     # Save the model if the mean reward is greater than 200
     postfix = int(time.time())
