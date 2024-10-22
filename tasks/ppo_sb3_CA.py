@@ -22,50 +22,67 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
     parser.add_argument('--env_id', help='environment ID', default=None)
-    parser.add_argument('--total_timesteps', help='maximum step size', type=int)
+    parser.add_argument('--min_timesteps', help='maximum step size', type=int)
     # parser.add_argument('--network', help='path for data')
     parser.add_argument('--xml_file_path', help='path for xml')
     parser.add_argument('--perf_log_path', help='path for xml')
-    # parser.add_argument('--ctrl_cost_weight', help='ctrl cost weight for gym env')
+    parser.add_argument('--ctrl_cost_weight', help='ctrl cost weight for gym env', type=float, default=0.0005)
 
     args = parser.parse_args()
 
     # Logger configuration
     config_name = args.perf_log_path
     tmp_path = config_name 
-    new_logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
+    # new_logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
 
     # vec_env = DummyVecEnv([lambda: gym.make(args.env_id, xml_file=args.xml_file_path, render_mode="rgb_array")])
     
     env_id = args.env_id
-    min_steps = int(args.total_timesteps)
+    min_steps = int(args.min_timesteps)
     robot = args.xml_file_path
 
     # Resource Allocation strategy
     # pattern = r"robot_(\d+)_"
-    pattern = re.compile(r'robot_(\d+)_(\d+)_(\d+)\.xml')
+    pattern = re.compile(r'robot_(\d+(?:\.\d+)?)_(\d+(?:\.\d+)?)_(\d+(?:\.\d+)?)\.xml')
 
     # Use re.search to find the pattern in the string
     match = re.search(pattern, robot)
     # Extract the information using group() method
     node_count = int(match.group(1))  # Extracts the node count
-    time_steps = int(match.group(2))
+    time_steps = int(float(match.group(2)))
     
     # time_scaler = node_count * 0.1
-    cost_scaler = math.log((time_steps+1))
-
+    # cost_scaler = 10* math.log((time_steps+1))
+    cost_scalar = abs(0.002 * (time_steps - args.min_timesteps * node_count))      # calculates base timesteps and sampled timesteps difference
+    
     # calc_timesteps = min_steps + (time_scaler * min_steps)            #Resource allocation
+
+    policy_kwargs = dict(
+        net_arch=[128, 128, 128, 128]
+    )
 
     env = gym.make(env_id, xml_file=robot)
     # Instantiate the model
-    model = PPO("MlpPolicy", env, verbose=1)
-    model.set_logger(new_logger)
+    model = PPO("MlpPolicy", env, verbose=1, batch_size=2048, learning_rate=0.0001, 
+                clip_range=0.1, ent_coef=0.01, policy_kwargs=policy_kwargs)      # model.set_logger(new_logger)
 
     # Train the model
     # model.learn(total_timesteps=time_steps)
     _, ep_rew_list = model.learn(total_timesteps=time_steps)
     # mean_ep_reward = np.mean(ep_rew_list)
     last_rew = ep_rew_list[-1]
+
+    entry0 = {args.xml_file_path: last_rew}
+    # Open the file in append mode
+    with open(os.path.join(config_name, 'pre_rews.json'), 'a') as f:
+        # Acquire an exclusive lock on the file
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            # Write the dictionary entry to the file as a JSON string
+            f.write(json.dumps(entry0) + "\n" + ",")
+        finally:
+            # Release the lock
+            fcntl.flock(f, fcntl.LOCK_UN)   
     # print("last_rew", last_rew)
     #Calculate gradient
     # tim = np.arange(0,len(ep_rew_list[-3:]))
@@ -79,7 +96,7 @@ def main():
         
     # Evaluate the policy
     # mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
-    mean_agg_reward = mean_agg_reward - cost_scaler * 10              #Cost allocation
+    mean_agg_reward = mean_agg_reward - cost_scalar              #Cost allocation
     # except Exception as e:
     #     mean_agg_reward = 0.0001 
     errBool = False

@@ -74,7 +74,19 @@ def main():
     last_rew = full_ep_rew_list[-1]
 
     ep_rew_list = full_ep_rew_list[-(len(full_ep_rew_list)//4):]
-    
+
+    entry0 = {args.xml_file_path: last_rew}
+    # Open the file in append mode
+    with open(os.path.join(config_name, 'pre_rews.json'), 'a') as f:
+        # Acquire an exclusive lock on the file
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            # Write the dictionary entry to the file as a JSON string
+            f.write(json.dumps(entry0) + "\n" + ",")
+        finally:
+            # Release the lock
+            fcntl.flock(f, fcntl.LOCK_UN)    
+
     #Calculate gradient
     tim = np.arange(0,len(ep_rew_list))
     # get linear trend lines

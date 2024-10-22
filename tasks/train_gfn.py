@@ -94,9 +94,9 @@ def write_robots_to_file(robots, filename="robots_list.txt"):
             file.write(f"{robot}\n")
 
 
-def call_train_script(perf_log_path, timesteps, env_id, ctrl_cost_weight):
+def call_train_script(perf_log_path, min_timesteps, env_id, ctrl_cost_weight):
 
-    timesteps = str(timesteps)
+    timesteps = str(min_timesteps)
     # print("timesteps", timesteps, type(timesteps))
     ppo_script = f"python ./tasks/ppo_sb3_{EXP_METHOD}.py"
 
@@ -222,12 +222,12 @@ class RoboGenTask(GFNTask):
         ), f"dangerous shape mismatch: {scalar_logreward.shape} vs {cond_info['beta'].shape}"
         return RewardScalar(scalar_logreward * cond_info["beta"])
 
-    def compute_flat_rewards(self, xml_robots, graphs, timesteps, env_id) -> Tuple[FlatRewards, Tensor]:
+    def compute_flat_rewards(self, xml_robots, graphs, min_timesteps, env_id) -> Tuple[FlatRewards, Tensor]:
         eprewmeans = []
         # start_time = time.time()
         write_robots_to_file(xml_robots)
         # print("POLICY_PATH file path", POLICY_PATH)
-        call_train_script(POLICY_PATH, timesteps, env_id, self.ctrl_cost_weight)
+        call_train_script(POLICY_PATH, min_timesteps, env_id, self.ctrl_cost_weight)
         
         no_return_value = 0.001
         valid_robots = []
@@ -507,7 +507,7 @@ def main():
     parser.add_argument("--env_terrain", type=str, default='wall')
     parser.add_argument("--terrain_from_external_source", type=int, default=1)
     parser.add_argument("--name", help='experiment_name', type=str, default='test')
-    parser.add_argument("--exp_method", help='experiment method', type=str, default='naive')
+    parser.add_argument("--exp_method", help='experiment method', type=str, default='CA')
     parser.add_argument("--rl_timesteps", help='rl_timesteps', type=int, default=4_000)
     parser.add_argument("--min_steps", help='min steps for gsca', type=int, default=3000)
     parser.add_argument("--max_gfn_nodes", help='graph nodes', type=int, default=10)
@@ -592,13 +592,15 @@ def main():
         "seed": int(f"{args.seed}"),
         "offline_ratio": 0.5,
         "env_id": f"{args.env_id}",
-        "epochs": 25,
+        "epochs": 10,
         "global_batch_size": args.global_batch_size,
-        "ctrl_cost_weight": 0.5,
+        "ctrl_cost_weight": 0.0005,
         "replay_buffer_size": int(args.offline_data_iters)*int(args.global_batch_size),
         "replay_buffer_warmup": int(args.offline_data_iters)*int(args.global_batch_size),
     }
     
+    print("no ctrl cost")
+
     trial = RoboTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
 
     trial.print_every = 1
