@@ -53,7 +53,7 @@ def main():
     
     # time_scaler = node_count * 0.1
     # cost_scaler = 10* math.log((time_steps+1))
-    cost_scalar = abs(0.001 * (time_steps - args.min_timesteps * node_count))      # calculates base timesteps and sampled timesteps difference
+    cost_scalar = time_steps - args.min_timesteps * node_count      # calculates base timesteps and sampled timesteps difference
     # calc_timesteps = min_steps + (time_scaler * min_steps)            #Resource allocation
 
     policy_kwargs = dict(
@@ -109,7 +109,7 @@ def main():
     plt.savefig(graphs_save_path + f"/g_{cost_scalar}_{node_count}_{mean_agg_reward}_{slope}_{g_postfix}.png", bbox_inches='tight')
     # # Evaluate the policy
     # mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
-    mean_agg_reward = mean_agg_reward/cost_scalar             #Cost allocation
+    mean_agg_reward = mean_agg_reward - 0.002 * cost_scalar             #Cost allocation
     # except Exception as e:
     #     mean_agg_reward = 0.0001 
     errBool = False

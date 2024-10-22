@@ -53,7 +53,7 @@ def main():
     time_steps = int(float(match.group(2)))
     
     # time_scaler = node_count * 0.1
-    cost_scaler = 10* math.log((time_steps+1))
+    # cost_scaler = 10* math.log((time_steps+1))
 
     calc_timesteps = min_steps*node_count         #Resource allocation
 
@@ -73,41 +73,41 @@ def main():
     # mean_ep_reward = np.mean(ep_rew_list)
     last_rew = full_ep_rew_list[-1]
 
-    ep_rew_list = full_ep_rew_list[-(len(full_ep_rew_list)//4):]
+    # ep_rew_list = full_ep_rew_list[-(len(full_ep_rew_list)//4):]
 
-    entry0 = {args.xml_file_path: last_rew}
-    # Open the file in append mode
-    with open(os.path.join(config_name, 'pre_rews.json'), 'a') as f:
-        # Acquire an exclusive lock on the file
-        fcntl.flock(f, fcntl.LOCK_EX)
-        try:
-            # Write the dictionary entry to the file as a JSON string
-            f.write(json.dumps(entry0) + "\n" + ",")
-        finally:
-            # Release the lock
-            fcntl.flock(f, fcntl.LOCK_UN)    
+    # entry0 = {args.xml_file_path: last_rew}
+    # # Open the file in append mode
+    # with open(os.path.join(config_name, 'pre_rews.json'), 'a') as f:
+    #     # Acquire an exclusive lock on the file
+    #     fcntl.flock(f, fcntl.LOCK_EX)
+    #     try:
+    #         # Write the dictionary entry to the file as a JSON string
+    #         f.write(json.dumps(entry0) + "\n" + ",")
+    #     finally:
+    #         # Release the lock
+    #         fcntl.flock(f, fcntl.LOCK_UN)    
 
-    #Calculate gradient
-    tim = np.arange(0,len(ep_rew_list))
-    # get linear trend lines
-    slope, intercept = np.polyfit(tim, ep_rew_list, 1)
+    # #Calculate gradient
+    # tim = np.arange(0,len(ep_rew_list))
+    # # get linear trend lines
+    # slope, intercept = np.polyfit(tim, ep_rew_list, 1)
 
-    if last_rew < 0 and slope < 0:
+    if last_rew < 0:
         mean_agg_reward = 0.00015
     else:
-        mean_agg_reward = slope * 100 + last_rew + 200
+        mean_agg_reward = last_rew + 200
         
-    fig=plt.figure(figsize=(12,6))
+    # fig=plt.figure(figsize=(12,6))
 
-    ax1=plt.subplot(121)
-    ax1.plot(tim,ep_rew_list,c='C0',lw=2,label='ep_rews')
-    ax1.plot(tim,slope*tim+intercept,ls='dotted',c='C0',lw=2,label='Gradient=%1.2f'%slope)
-    ax1.legend()
-    graphs_save_path = os.path.join(config_name, 'graphs')
-    if not os.path.exists(graphs_save_path):
-        os.mkdir(graphs_save_path)
-    g_postfix = int(time.time())
-    plt.savefig(graphs_save_path + f"/g_{node_count}_{mean_agg_reward}_{slope}_{g_postfix}.png", bbox_inches='tight')
+    # ax1=plt.subplot(121)
+    # ax1.plot(tim,ep_rew_list,c='C0',lw=2,label='ep_rews')
+    # ax1.plot(tim,slope*tim+intercept,ls='dotted',c='C0',lw=2,label='Gradient=%1.2f'%slope)
+    # ax1.legend()
+    # graphs_save_path = os.path.join(config_name, 'graphs')
+    # if not os.path.exists(graphs_save_path):
+    #     os.mkdir(graphs_save_path)
+    # g_postfix = int(time.time())
+    # plt.savefig(graphs_save_path + f"/g_{node_count}_{mean_agg_reward}_{slope}_{g_postfix}.png", bbox_inches='tight')
     # # Evaluate the policy
     # mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
     # mean_agg_reward = mean_agg_reward - cost_scaler             #Cost allocation

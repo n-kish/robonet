@@ -92,7 +92,7 @@ def main():
     if last_rew < 0:
         mean_agg_reward = 0.00015
     else:
-        mean_agg_reward = last_rew
+        mean_agg_reward = last_rew + 200
         
     # Evaluate the policy
     # mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
