@@ -373,6 +373,10 @@ def main():
     parser.add_argument("--min_steps", help='min steps for gsca', type=int, default=30000)
     parser.add_argument("--max_gfn_nodes", help='graph nodes', type=int, default=10)
     parser.add_argument("--lastbatch_rl_timesteps", help='lastbatch_rl_timesteps', type=int, default=1_000_000)
+    parser.add_argument("--global_batch_size", help='batch size per iteration', default=32)
+    parser.add_argument("--offline_data_iters", help='iterations count for offline data collection', type=int, default=150)
+
+
     args = parser.parse_args()
     
     postfix = int(time.time())
@@ -413,11 +417,14 @@ def main():
         "resource_per_link":f"{args.min_steps}",
         "init_data_iters": 10,
         "seed": int(f"{args.seed}"),
-        "global_batch_size": 32,
-        "offline_ratio": 0.5,
+        "epochs": 10,
+        "global_batch_size": args.global_batch_size,
+        "ctrl_cost_weight": 0.0005,
+        "replay_buffer_size": int(args.offline_data_iters)*int(args.global_batch_size),
+        "replay_buffer_warmup": int(args.offline_data_iters)*int(args.global_batch_size),
     }
 
-    print("32 bs, Nw size increased to 128x3, epochs = 50, changing maxnodes till 150 iterations. buffer size = 10000. Action size - 25x4, rew*4 and log removed")
+    # print("32 bs, Nw size increased to 128x3, epochs = 50, changing maxnodes till 150 iterations. buffer size = 10000. Action size - 25x4, rew*4 and log removed")
     
     trial = RoboTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
 

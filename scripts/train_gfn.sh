@@ -2,13 +2,13 @@
 seed=134
 env="ant"
 env_id="Ant-v5"
-train_steps=300_000
+train_steps=400_000
 start_point="base"    # "orig" / "base"
 exp_method="linearscaling"      # "naive" / "GS" / "CA" / "GSCA"   
 env_terrain="flat"      # "flat" / "incline" / "gap" / "wall"
 path="/home/knagiredla/robonet/logs"
 max_nodes=10
-min_steps=20_000
+min_steps=40_000
 
 # echo "env_terrain is $env_terrain"
 

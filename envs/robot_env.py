@@ -1213,7 +1213,7 @@ def graph_to_robot_with_init_design(graph, xml_dir, log_dir, exp_method, min_res
         if exp_method in ["linearscaling"]:
             values2 = [1]  # For resource
         else:
-            values2 = [1, 0.75, 0.5, 1.25, 1.5]
+            values2 = [1, 1.25, 1.5]
 
 
         # values1 = [1, 0.9, 0.8, 1.1, 1.2]  # For length_ratio, size, gear
