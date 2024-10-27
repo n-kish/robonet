@@ -15,34 +15,39 @@ def cycle(it):
 
 def main():
 
-    exp = 'CA'
+    # exp = 'CA'  # Change to 'GSCA' when needed
 
-    if exp == 'CA':
-        from gflownet_costaware.models.graph_transformer import GraphTransformerGFN
-        from gflownet_costaware.envs.frag_mol_env import FragMolBuildingEnvContext
-        from gflownet_costaware.tasks.seh_frag import SEHFragTrainer
-    else:
-        from gflownet_old.models.graph_transformer import GraphTransformerGFN
-        from gflownet_old.envs.frag_mol_env import FragMolBuildingEnvContext
-        from gflownet_old.tasks.seh_frag import SEHFragTrainer
+    # if exp == 'CA' or 'GSCA':
+    #     from models.graph_transformer import GraphTransformerGFN
+    #     from envs.frag_mol_env import FragMolBuildingEnvContext
+    #     from tasks.train_gfn import RoboTrainer
+    # else:
+    #     from models.graph_transformer import GraphTransformerGFN
+    #     from envs.frag_mol_env import FragMolBuildingEnvContext
+    #     from tasks.train_gfn import RoboTrainer
+
+    from models.graph_transformer import GraphTransformerGFN
+    from envs.frag_mol_env import FragMolBuildingEnvContext
+    from tasks.train_gfn import RoboTrainer
+
+    # if exp not in ['CA', 'GSCA']:
+    #     raise ValueError("exp must be either 'CA' or 'GSCA'")
 
 
     # Required Inputs based on the characteristics of the run
-    lower_bound = 400
-    upper_bound = 400
+    lower_bound = 500
+    upper_bound = 500
     step_size = 100
-    path = "/home/knagiredla/gfn_archive/gfn_current/gfn_fixed_comp/logs/exp_orig1_75_300k_gsca_flat_3_1725246076/policies"
+    path = "/home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_40_000_134_1729571241/policies"
 
     for idx in range(lower_bound, upper_bound+1, step_size):
         
-        # print("idx", idx)
-        
         model_path = path + f"/model_state_{idx}.pt"
 
-        env_ctx = FragMolBuildingEnvContext(max_frags=9, num_cond_dim=32)
+        env_ctx = FragMolBuildingEnvContext(max_frags=10, num_cond_dim=32)
 
         # Define an instance of YourModelClass (assuming it's the class of self.model)
-        model = GraphTransformerGFN(env_ctx, num_emb=128, num_layers=3)
+        model = GraphTransformerGFN(env_ctx, num_emb=128, num_layers=4)
 
         # Load the model state from the saved file
         saved_state = torch.load(model_path)  # Replace with the actual file path
@@ -64,7 +69,7 @@ def main():
         if not os.path.isdir(new_hps['log_dir']):
             os.mkdir(new_hps['log_dir'])
 
-        trainer2 = SEHFragTrainer(hps=new_hps, device=device)
+        trainer2 = RoboTrainer(hps=new_hps, device=device)
         # print("THIS IS TRAINER", trainer2)
         # print(type(trainer2))
         final_dl = trainer2.build_final_data_loader()
@@ -74,8 +79,6 @@ def main():
                             cycle(final_dl),
                             ):
                                 pass
-        
-        
 
 if __name__ == "__main__":
     main()
