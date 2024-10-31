@@ -10,4 +10,5 @@
 <H3>Environment Requirements</H3>
 
 <p>Python >= 3.8</p>
-<p>PyTorch == 1.8.0</p>
+<p>PyTorch == 1.13.1</p>
+
