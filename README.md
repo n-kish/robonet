@@ -7,7 +7,7 @@
 
 <H1>Installation</H1>
 
-<H2>Environment Requirements</H2>
+<H3>Environment Requirements</H3>
 
 <p>Python >= 3.8</p>
 <p>PyTorch == 1.8.0</p>
