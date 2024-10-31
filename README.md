@@ -1,2 +1,3 @@
 # robonet
-RoboNet: Project Details Coming Soon
+# Heading 1 RoboNet: A Sample Efficient Co-Design Generator
+
