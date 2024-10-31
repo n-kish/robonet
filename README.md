@@ -1,3 +1,3 @@
 # robonet
-# Heading 1 RoboNet: A Sample Efficient Co-Design Generator
+# Heading1 RoboNet: A Sample Efficient Co-Design Generator
 
