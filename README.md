@@ -5,10 +5,5 @@
 <p>RoboNet is a combination of GFlowNet with rate-based design prioritization and cost-aware sampling strategy to evaluate robots based on future promise under full training.</p> 
 <p>[<a href="https://openreview.net/pdf?id=VdT2R6XSlV" target="_blank">Paper</a>]</p>
 
-<H1>Installation</H1>
-
-<H3>Environment Requirements</H3>
-
-<p>Python >= 3.8</p>
-<p>PyTorch == 1.13.1</p>
-
+<H1>Credits</H1>
+<p>Many thanks to the [<a href="https://github.com/recursionpharma" target="_blank">Recursion Pharma</a>] repository and [<a href="https://github.com/recursionpharma" target="_blank">Yoshua Bengio's Lab</a>] for making GFlowNet accessible to everyone.</p>
