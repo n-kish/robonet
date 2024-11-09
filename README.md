@@ -6,4 +6,4 @@
 <p>[<a href="https://openreview.net/pdf?id=VdT2R6XSlV" target="_blank">Paper</a>]</p>
 
 <H1>Credits</H1>
-<p>Many thanks to the [<a href="https://github.com/recursionpharma" target="_blank">Recursion Pharma</a>] repository and [<a href="https://github.com/recursionpharma" target="_blank">Yoshua Bengio's Lab</a>] for making GFlowNet accessible to everyone.</p>
+<p>Many thanks to the [<a href="https://github.com/recursionpharma" target="_blank">Recursion Pharma</a>] repository and [<a href="https://github.com/bengioe" target="_blank">Yoshua Bengio's Lab</a>] for making GFlowNet accessible to everyone.</p>
