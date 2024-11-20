@@ -259,7 +259,7 @@ class GraphSampler:
                     data[i]["is_sink"].append(0)
                     graphs[i] = gp
                     # print("graphs from l208 in graph_sampling.py", graphs)
-                if done[i] and self.sanitize_samples and not self.ctx.is_sane(graphs[i], xml_dir, log_dir, exp_method, self.min_resource):
+                if done[i] and self.sanitize_samples:
                     # check if the graph is sane (e.g. RDKit can
                     # construct a molecule from it) otherwise
                     # treat the done action as illegal
