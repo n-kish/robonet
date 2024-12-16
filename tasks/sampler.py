@@ -35,10 +35,10 @@ def main():
 
 
     # Required Inputs based on the characteristics of the run
-    lower_bound = 500
-    upper_bound = 500
+    lower_bound = 750
+    upper_bound = 750
     step_size = 100
-    path = "/home/knagiredla/robonet/logs/exp_linearscaling_10_flat_base_ant_40_000_134_1729571241/policies"
+    path = "/home/knagiredla/robonet/logs/exp_GSCA_10_flat_base_ant_40_000_134_1731216187/policies"
 
     for idx in range(lower_bound, upper_bound+1, step_size):
         
@@ -52,11 +52,10 @@ def main():
         # Load the model state from the saved file
         saved_state = torch.load(model_path)  # Replace with the actual file path
 
-        print("saved_state", saved_state)
+        # print("saved_state", saved_state)
 
         # Update the model's state with the loaded state
-        model.load_state_dict(saved_state["models_state_dict"][0])  # Assuming the state was saved within a list
-
+        model.load_state_dict(saved_state["models_state_dict"][0], strict=False)  # Assuming the state was saved within a list
         # Access other saved information if needed
         # Eg. model_state_dict = saved_state["models_state_dict"]
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -72,7 +71,7 @@ def main():
         trainer2 = RoboTrainer(hps=new_hps, device=device)
         # print("THIS IS TRAINER", trainer2)
         # print(type(trainer2))
-        final_dl = trainer2.build_final_data_loader()
+        final_dl = trainer2.build_validation_data_loader()
 
         for it, batch in zip(
                             range(new_hps["num_training_steps"], new_hps["num_training_steps"] + 1), 

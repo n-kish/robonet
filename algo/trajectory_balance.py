@@ -38,7 +38,7 @@ class TrajectoryBalance:
         rng: np.random.RandomState,
         hps: Dict[str, Any],
         max_len=None,
-        max_nodes=None,
+        max_nodes=None
     ):
         """TB implementation, see
         "Trajectory Balance: Improved Credit Assignment in GFlowNets Nikolay Malkin, Moksh Jain,
@@ -104,7 +104,7 @@ class TrajectoryBalance:
             self._init_subtb(torch.device("cuda"))  # TODO: where are we getting device info?
 
     def create_training_data_from_own_samples(
-        self, model, xml_dir: str, log_dir: str, is_final_sample:bool, n: int, min_resource, exp_method: str, cond_info: Tensor, random_action_prob: float):
+        self, model, xml_dir: str, log_dir: str, is_final_sample:bool, n: int, min_resource, exp_method: str, cond_info: Tensor, random_action_prob: float, env_id: str):
         """Generate trajectories by sampling a model
 
         Parameters
@@ -137,7 +137,7 @@ class TrajectoryBalance:
         dev = self.ctx.device
         cond_info = cond_info.to(dev)
         # print("sample_from_model")
-        data = self.graph_sampler.sample_from_model(model, xml_dir, log_dir, is_final_sample, n, min_resource, exp_method, cond_info, dev, random_action_prob)
+        data = self.graph_sampler.sample_from_model(model, xml_dir, log_dir, is_final_sample, n, min_resource, exp_method, cond_info, dev, env_id, random_action_prob)
         logZ_pred = model.logZ(cond_info)
         for i in range(n):
             data[i]["logZ"] = logZ_pred[i].item()

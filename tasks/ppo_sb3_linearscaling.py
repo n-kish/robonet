@@ -3,11 +3,19 @@ import argparse
 import json
 
 import gymnasium as gym
-
-from stable_baselines3 import PPO
+from sbx import PPO
+# from stable_baselines3 import PPO
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv
+from stable_baselines3.common.vec_env import SubprocVecEnv  # Add this import
+import multiprocessing
+from stable_baselines3.common.monitor import Monitor
+import os
+from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.utils import safe_mean
+
+
 
 import fcntl
 import time
@@ -55,22 +63,53 @@ def main():
     # time_scaler = node_count * 0.1
     # cost_scaler = 10* math.log((time_steps+1))
 
-    calc_timesteps = min_steps*node_count         #Resource allocation
+    # calc_timesteps = min_steps*node_count         #Resource allocation
 
     policy_kwargs = dict(
         net_arch=[128, 128, 128, 128]
     )
     # print("time_steps", time_steps)
+    path = args.perf_log_path
+    n_envs = 4
+    vec_env = SubprocVecEnv([
+        lambda i=i: Monitor(
+            gym.make(env_id,
+                xml_file=robot,
+                render_mode='rgb_array'),
+            os.path.join(path, str(i))
+        ) for i in range(n_envs)
+    ])
 
-    env = gym.make(env_id, ctrl_cost_weight=float(args.ctrl_cost_weight), xml_file=robot)
+    # env = gym.make(env_id, xml_file=robot)
     # Instantiate the model
-    model = PPO("MlpPolicy", env, verbose=1, batch_size=2048, learning_rate=0.0001, 
+    model = PPO("MlpPolicy", vec_env, verbose=1, batch_size=2048, learning_rate=0.0001, 
                 clip_range=0.1, ent_coef=0.01, policy_kwargs=policy_kwargs)    
     # model.set_logger(new_logger)
 
-    # Train the model
-    _, full_ep_rew_list = model.learn(total_timesteps=calc_timesteps)
-    # mean_ep_reward = np.mean(ep_rew_list)
+    full_ep_rew_list = []
+    # Add callback to collect rewards during training
+    class RewardCallback(BaseCallback):
+        def __init__(self, verbose=0):
+            super().__init__(verbose)
+            self.ep_rewards_history = []
+
+        def _on_step(self) -> bool:
+            # Required method that gets called at every step
+            return True
+
+        def _on_rollout_end(self):
+            # Collect rewards at the end of each rollout (episode)
+            if len(self.model.ep_info_buffer) > 0:
+                self.ep_rewards_history.append(safe_mean([ep_info["r"] for ep_info in self.model.ep_info_buffer]))
+            return True 
+
+    reward_callback = RewardCallback()
+    
+    # Pass callback to learn
+    model.learn(total_timesteps=time_steps, progress_bar=True, callback=reward_callback)    # mean_ep_reward = np.mean(ep_rew_list)
+    
+    full_ep_rew_list = reward_callback.ep_rewards_history
+
     last_rew = full_ep_rew_list[-1]
 
     # ep_rew_list = full_ep_rew_list[-(len(full_ep_rew_list)//4):]

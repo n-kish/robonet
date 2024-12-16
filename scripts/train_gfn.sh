@@ -2,17 +2,18 @@
 seed=134
 env="ant"
 env_id="Ant-v5"
-train_steps=400_000
+train_steps=500_000
 start_point="base"    # "orig" / "base"
-exp_method="linearscaling"      # "naive" / "GS" / "CA" / "GSCA"   
-env_terrain="flat"      # "flat" / "incline" / "gap" / "wall"
-path="/home/knagiredla/robonet/logs"
+exp_method="GSCA"      # "CA" / "GSCA" / "linearscaling"
+env_terrain="incline"      # "flat" / "incline" / "gap" / "wall" / "rugged"
+path="/scratch/knagiredla/robonet/logs"
 max_nodes=10
-min_steps=40_000
+min_steps=50_000
+global_batch_size=64
 
 # echo "env_terrain is $env_terrain"
 
-if [[ "$env_terrain" == "gap" || "$env_terrain" == "wall" ]]; then
+if [[ "$env_terrain" == "gap" || "$env_terrain" == "wall" || "$env_terrain" == "rugged" ]]; then
     ext_terrain=1   #True
 else
     ext_terrain=0   #False
@@ -28,7 +29,7 @@ for seed in 134
 do
     for ((i = 0; i < ${#scripts[@]}; i++))
     do  
-        sbatch ./scripts/gfn_sbatch.sh ${scripts[$i]} --name $experiment_name \
+        sbatch ./scripts/gfn_sbatch_gpu.sh ${scripts[$i]} --name $experiment_name \
             --rl_timesteps $train_steps \
             --min_steps $min_steps \
             --lastbatch_rl_timesteps 1_000_000 \
@@ -42,7 +43,8 @@ do
             --terrain_from_external_source $ext_terrain \
             --run_path $path \
             --max_gfn_nodes $max_nodes \
-            --seed $seed
+            --seed $seed \
+            --global_batch_size $global_batch_size
         echo ${scripts[$i]} --name $experiment_name --rl_timesteps $rl_timesteps --terrain_from_external_source $ext_terrain
     done
 done

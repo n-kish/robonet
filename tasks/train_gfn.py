@@ -18,12 +18,16 @@ import torch_geometric.data as gd
 # from rdkit.Chem.rdchem import Mol as RDMol
 from torch import Tensor
 from torch.utils.data import Dataset
-import wandb
-wandb.login()
+#import wandb
+#wandb.login()
 import re
 import math
 import subprocess
 import xml.etree.ElementTree as ET
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.misc import create_logger
 from algo.flow_matching import FlowMatching
@@ -38,9 +42,9 @@ from utils.transforms import thermometer
 from train import cycle
 
 
-from stable_baselines3 import PPO
-import gymnasium as gym
-from stable_baselines3.common.evaluation import evaluate_policy
+#from stable_baselines3 import PPO
+# import gymnasium as gym
+#from stable_baselines3.common.evaluation import evaluate_policy
 import fcntl
 
 
@@ -107,7 +111,7 @@ def call_train_script(perf_log_path, min_timesteps, env_id, ctrl_cost_weight):
     args5= f"{ppo_script}"
     args6= f"{ctrl_cost_weight}"
     
-    result = subprocess.run(['bash', './scripts/gfn_sb3_ppo.sh', args1, args2, args3, args4, args5, args6], check=True)
+    result = subprocess.run(['bash', './scripts/train_ppo.sh', args1, args2, args3, args4, args5, args6], check=True)
     
     if result.returncode == 0:
         pass
@@ -247,7 +251,9 @@ class RoboGenTask(GFNTask):
                 eprewmeans.append(no_return_value)
                 valid_robots.append(False)
 
-        eprewmeans = list(np.around(np.array(eprewmeans),1))
+        eprewmeans = np.array(eprewmeans)
+        eprewmeans[eprewmeans < 0] = no_return_value
+        eprewmeans = list(np.around(eprewmeans, 1))
         print("eprewmeans", eprewmeans)
 
         #keep track of the number of invalid robots
@@ -261,7 +267,7 @@ class RoboGenTask(GFNTask):
         std = np.std(valid_eprewmeans) if valid_eprewmeans else 0
         print("Max value & mean, median, std.dev", str(max(valid_eprewmeans)) if valid_eprewmeans else "N/A", mean, median, std)
 
-        wandb.log({"mean": mean, "median": median, "Std.Dev": std})
+        # wandb.log({"mean": mean, "median": median, "Std.Dev": std})
 
         is_valid = torch.tensor(valid_robots).bool()
         # print("is_valid", is_valid)
@@ -329,7 +335,7 @@ class RoboTrainer(GFNTrainer):
         )
 
     def setup_model(self):
-        self.model = GraphTransformerGFN(self.ctx, log_dir=self.hps["log_dir"], data_collection_iters= self.hps["init_data_iters"], num_emb=self.hps["num_emb"], num_layers=self.hps["num_layers"])
+        self.model = GraphTransformerGFN(self.ctx, num_emb=self.hps["num_emb"], num_layers=self.hps["num_layers"])
 
     def setup_env_context(self):
         self.ctx = FragMolBuildingEnvContext(
@@ -408,7 +414,7 @@ class RoboTrainer(GFNTrainer):
     def update_max_nodes(self, iteration):
         if iteration < int(self.hps["init_data_iters"]):
             base_max_nodes = self.hps["max_nodes"] + 1
-            new_max_nodes = 3 + (iteration % (base_max_nodes - 3))
+            new_max_nodes = 2 + (iteration % (base_max_nodes - 3))
         else:
             new_max_nodes = self.hps["max_nodes"] 
         
@@ -500,19 +506,19 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)
     parser.add_argument("--run_path", default="./logs")
-    parser.add_argument("--base_xml_path", type=str, default='./assets/base_ant_incline.xml')
-    parser.add_argument("--env_id", type=str, default='Ant-v5')
-    parser.add_argument("--env", type=str, default='ant')
+    parser.add_argument("--base_xml_path", type=str, default='./assets/base_swimmer_flat.xml')
+    parser.add_argument("--env_id", type=str, default='Swimmer-v5')
+    parser.add_argument("--env", type=str, default='swimmer')
     parser.add_argument("--start_point", type=str, default='base')
-    parser.add_argument("--env_terrain", type=str, default='wall')
-    parser.add_argument("--terrain_from_external_source", type=int, default=1)
+    parser.add_argument("--env_terrain", type=str, default='flat')
+    parser.add_argument("--terrain_from_external_source", type=int, default=0)
     parser.add_argument("--name", help='experiment_name', type=str, default='test')
     parser.add_argument("--exp_method", help='experiment method', type=str, default='CA')
     parser.add_argument("--rl_timesteps", help='rl_timesteps', type=int, default=4_000)
     parser.add_argument("--min_steps", help='min steps for gsca', type=int, default=3000)
     parser.add_argument("--max_gfn_nodes", help='graph nodes', type=int, default=10)
     parser.add_argument("--offline_data_iters", help='iterations count for offline data collection', type=int, default=150)
-    parser.add_argument("--global_batch_size", help='batch size per iteration', default=32)
+    parser.add_argument("--global_batch_size", help='batch size per iteration', type=int, default=32)
     parser.add_argument("--lastbatch_rl_timesteps", help='lastbatch_rl_timesteps', type=int, default=1_000_000)
 
     args = parser.parse_args()
@@ -525,14 +531,14 @@ def main():
         parser.add_argument("--terrain_path", type=str, default=f"./assets/{args.env_terrain}_terrain.png")
         args = parser.parse_args()
 
-    wandb.init(
+ #   wandb.init(
     # Set the project where this run will be logged
-    project="robonet_tests", 
-    name=f"{args.name}",
-    notes="RBN+mujoco+sb3",
-    mode="disabled",  # "disabled" or "online"
-    tags=["1k iter", "beta_decay", "randacts0"]
-    )
+  #  project="robonet_tests", 
+   # name=f"{args.name}",
+   # notes="RBN+mujoco+sb3",
+   # mode="disabled",  # "disabled" or "online"
+   # tags=["1k iter", "beta_decay", "randacts0"]
+   # )
 
 
     print("Env:", args.base_xml_path)
@@ -574,7 +580,7 @@ def main():
         "gum_beta": 0.0,
         "overwrite_existing_exp": True,
         "qm9_h5_path": "/data/chem/qm9/qm9.h5",
-        "num_training_steps": 1000,
+        "num_training_steps": 500,
         "validate_every": 250,
         "lr_decay": 20000,
         "sampling_tau": 0.99,
@@ -599,7 +605,7 @@ def main():
         "replay_buffer_warmup": int(args.offline_data_iters)*int(args.global_batch_size),
     }
     
-    print("no ctrl cost")
+    # print("no ctrl cost")
 
     trial = RoboTrainer(hps, torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
 

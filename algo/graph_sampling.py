@@ -58,11 +58,9 @@ class GraphSampler:
         self.sanitize_samples = True
         self.correct_idempotent = correct_idempotent
         self.pad_with_terminal_state = pad_with_terminal_state
-    
 
     def sample_from_model(
-        self, model: nn.Module, xml_dir: str, log_dir:str, is_final_sample, n: int, exp_method, min_resource, cond_info: Tensor, dev: torch.device, random_action_prob: float = 0.0
-    ):
+        self, model: nn.Module, xml_dir: str, log_dir:str, is_final_sample, n: int, exp_method, min_resource, cond_info: Tensor, dev: torch.device, env_id: str, random_action_prob: float = 0.0):
         """Samples a model in a minibatch
 
         Parameters
@@ -259,7 +257,7 @@ class GraphSampler:
                     data[i]["is_sink"].append(0)
                     graphs[i] = gp
                     # print("graphs from l208 in graph_sampling.py", graphs)
-                if done[i] and self.sanitize_samples:
+                if done[i] and self.sanitize_samples and not self.ctx.is_sane(env_id, graphs[i], xml_dir, log_dir, exp_method, self.min_resource):
                     # check if the graph is sane (e.g. RDKit can
                     # construct a molecule from it) otherwise
                     # treat the done action as illegal

@@ -207,7 +207,7 @@ class RoboTrainer(GFNTrainer):
         )
 
     def setup_model(self):
-        self.model = GraphTransformerGFN(self.ctx, log_dir=self.hps["log_dir"], data_collection_iters= self.hps["init_data_iters"], num_emb=self.hps["num_emb"], num_layers=self.hps["num_layers"])
+        self.model = GraphTransformerGFN(self.ctx, num_emb=self.hps["num_emb"], num_layers=self.hps["num_layers"])
 
     def setup_env_context(self):
         self.ctx = FragMolBuildingEnvContext(

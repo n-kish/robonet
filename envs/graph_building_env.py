@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch_geometric.data as gd
 from networkx.algorithms.isomorphism import is_isomorphic
-from rdkit.Chem import Mol
+# from rdkit.Chem import Mol
 from torch_scatter import scatter, scatter_max
 import os
 
@@ -968,18 +968,18 @@ class GraphBuildingEnvContext:
         """
         raise NotImplementedError()
 
-    def mol_to_graph(self, mol: Mol) -> Graph:
-        """Verifies whether a graph is sane according to the context. This can
-        catch, e.g. impossible molecules.
+    # def mol_to_graph(self, mol: Mol) -> Graph:
+    #     """Verifies whether a graph is sane according to the context. This can
+    #     catch, e.g. impossible molecules.
 
-        Parameters
-        ----------
-        mol: Mol
-            An RDKit molecule
+    #     Parameters
+    #     ----------
+    #     mol: Mol
+    #         An RDKit molecule
 
-        Returns
-        -------
-        g: Graph
-            The corresponding Graph representation of that molecule.
-        """
-        raise NotImplementedError()
+    #     Returns
+    #     -------
+    #     g: Graph
+    #         The corresponding Graph representation of that molecule.
+    #     """
+    #     raise NotImplementedError()

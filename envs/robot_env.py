@@ -15,6 +15,7 @@ import itertools
 import random
 import subprocess
 from collections import defaultdict, deque
+import pickle
 
 
 file_lock = multiprocessing.Lock()
@@ -77,6 +78,8 @@ class Joint:
         self.param_inited = False
         self.pos = parse_vec(node.attrib['pos'])
         if self.local_coord:
+            # print("self.pos", self.pos)
+            # print("body.pos", body.pos)
             self.pos += body.pos
     
     def __repr__(self):
@@ -93,6 +96,7 @@ class Joint:
         self.name = self.body.name + '_joint'
         self.node.attrib['name'] = self.name
         self.node.attrib['pos'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in pos])
+        # print("Joint --> self.node.attrib['pos']", self.node.attrib['pos'])
         if self.actuator is not None:
             self.actuator.sync_node()
         
@@ -107,10 +111,12 @@ class Geom:
         self.param_inited = False
         self.size = parse_vec(node.attrib['size'])
         if self.type == 'capsule':
-            self.start, self.end = parse_fromto(node.attrib['fromto'])
+            if 'fromto' in node.attrib:  # Check if 'fromto' exists
+                self.start, self.end = parse_fromto(node.attrib['fromto'])
+            # print("self.local_coord", self.local_coord)
             if self.local_coord:
-                self.start += body.pos
-                self.end += body.pos
+                self.start = body.pos
+                self.end = body.pos
             if body.bone_start is None:
                 self.bone_start = self.start.copy()
                 body.bone_start = self.bone_start.copy()
@@ -135,12 +141,13 @@ class Geom:
         if self.type == 'capsule':
             start = self.start - self.body.pos if self.local_coord else self.start
             end = self.end - self.body.pos if self.local_coord else self.end
-            if body_start is not None:
-                # print("body start is not none, i.e. received new body_start and body_end")
-                self.node.attrib['fromto'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in np.concatenate([body_start, body_end])])
-            else:
-                # print("body start is none, i.e. didnot receive new body_start and body_end")
-                self.node.attrib['fromto'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in np.concatenate([start, end])])
+            if not self.local_coord:
+                if body_start is not None:
+                    # print("body start is not none, i.e. received new body_start and body_end")
+                    self.node.attrib['fromto'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in np.concatenate([body_start, body_end])])
+                else:
+                    # print("body start is none, i.e. didnot receive new body_start and body_end")
+                    self.node.attrib['fromto'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in np.concatenate([start, end])])
 
 
 class Actuator:
@@ -184,8 +191,12 @@ class Body:
         self.pos = parse_vec(node.attrib['pos'])
         # print("pos from body class before changes", self.pos)
 
-        if self.local_coord and parent_body is not None:
-            self.pos += parent_body.pos
+        # if self.local_coord and parent_body is not None:
+        #     print("self.pos before", self.pos)
+        #     print("parent_body.pos", parent_body.pos)
+        #     self.pos += parent_body.pos
+        #     print("self.pos after", self.pos)
+
         
         self.bone_start = self.pos.copy()
         self.joints = [Joint(x, self) for x in node.findall('joint[@type="hinge"]')] + [Joint(x, self) for x in node.findall('joint[@type="free"]')]
@@ -269,21 +280,21 @@ class Body:
 
 class Robot:
 
-    def __init__(self, xml, is_xml_str=False):
+    def __init__(self, xml, env_id, is_xml_str=False):
         self.bodies = []
         # self.cfg = cfg
         # self.param_mapping = cfg.get('param_mapping', 'clip')
         self.tree = None    # xml tree
-        self.load_from_xml(xml, is_xml_str)
+        self.load_from_xml(xml, env_id, is_xml_str)
         self.init_bodies()
         # self.param_names = self.get_params(get_name=True)
         # self.init_params = self.get_params()
 
-    def load_from_xml(self, xml, is_xml_str=False):
+    def load_from_xml(self, xml, env_id, is_xml_str=False):
         parser = XMLParser(remove_blank_text=True)
         self.tree = parse(BytesIO(xml) if is_xml_str else xml, parser=parser)
         # self.local_coord = self.tree.getroot().find('.//compiler').attrib['coordinate'] == 'local'
-        self.local_coord = None
+        self.local_coord = True if env_id == 'Hopper-v5' else None
         root = self.tree.getroot().find('worldbody').find('body')
         self.add_body(root, None)
 
@@ -343,102 +354,115 @@ class Robot:
         self.sync_node()
 
 
-    def redesign_bodies_with_init_design(self, body_list, body, attach_loc=None, geom_type=None, parent_body=None, length_ratio=None, size_factor=None, gear_factor=None):
+    def redesign_bodies_with_init_design(self, env_id, body_list, body, attach_loc=None, geom_type=None, parent_body=None, length_ratio=None, size_factor=None, gear_factor=None):
         #modify the created robot bodies based on the required specification
+        # print("entered redesign")
+        # print("env", env)
+        # if env == 'Swimmer-v5':
+        #     if parent_body is None:
+        #         pass
+        #     else:
+        #         fixed_pos_values = [0.0, 0.0, 0.0] 
+        #         body.joints[0].node.attrib['pos'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in fixed_pos_values])
 
-        body_start = parent_body.geoms[0].start 
-        body_end = parent_body.geoms[0].end
-        # print("parent_body body_start", body_start, type(body_start))
-        # print("parent_body body_end", body_end)
-        #take the length of parent body
-        body_start_array = np.array(body_start) 
-        body_end_array = np.array(body_end)
-        sign = np.sign(body_end_array)
-        # print("sign", sign)
-        # print("length ratio is", length_ratio)
-        length = np.abs(np.abs(body_end_array) - np.abs(body_start_array)) * length_ratio if length_ratio is not None else np.abs(np.abs(body_end_array) - np.abs(body_start_array))         # The final length is a result of (default length * length ratio) - Apr23 Kishan
-        # print("length unsigned", length, type(length))
-        length_new = length * sign
-        
-        if attach_loc is None:
-            pass
-        if attach_loc == 'spot_0':
-            angle = 0
-            new_x, new_y, new_z = transform_body(angle, length_new) 
-            body_end = [new_x, new_y, new_z]
-        elif attach_loc == 'spot_1':
-            angle = 30
-            new_x, new_y, new_z = transform_body(angle, length_new) 
-            body_end = [new_x, new_y, new_z]
-            # print("body_end when spot_2 is selected", body_end)
-        elif attach_loc == 'spot_2':
-            angle = 60
-            new_x, new_y, new_z = transform_body(angle, length_new) 
-            body_end = [new_x, new_y, new_z]
-            # print("body_end when spot_3 is selected", body_end)
-        elif attach_loc == 'spot_3':
-            angle = 90
-            new_x, new_y, new_z = transform_body(angle, length_new) 
-            body_end = [new_x, new_y, new_z]
-        
-        if parent_body is None:
-            pass
-        else:
-            # body_fromto = body_list[-1].geoms[0].node.attrib['fromto']
-            fromto_end = parent_body.geoms[0].end
-            # body_start = fromto_end
-            # print("parent_fromto_end", fromto_end)
-            child_body_pos = fromto_end
-            body.node.attrib['pos'] =  ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in child_body_pos])
+        #         print("pos", parent_body.pos)
+        #         print("size", size_factor)
+        #         print("parent_size", parent_body.geoms[0].size[0])
 
-            length_new = body_end
-        
-            sign_for_axis = np.sign(body_end)
-
-            # print("sign_for_axis", sign_for_axis, type(sign_for_axis))
-
-            if sign_for_axis[0] == sign_for_axis[1]:
-                final_axis_sign = np.array([-1, 1, 0])
+        if env_id == 'Hopper-v5':
+            # print("pos", parent_body.pos)
+            # print("size", size_factor)
+            # print("parent_size", parent_body.geoms[0].size[0])
+            # print("parent_length", parent_body.geoms[0].size[1])
+            if parent_body is None:
+                pass
             else:
-                final_axis_sign = np.array([-1, -1, 0])
+                fixed_value = 0.2
+                body.geoms[0].size[1] = length_ratio * fixed_value
+                # body_fromto = body_list[-1].geoms[0].node.attrib['fromto']
+                body.geoms[0].pos = [0, 0, body.geoms[0].size[1]]
+                # print("body.geoms[0].pos", body.geoms[0].pos)
+                sign = np.sign(parent_body.pos)
+                body_pos = sign * (np.abs(parent_body.pos) + np.abs(body.geoms[0].pos)) 
+                # print("body_pos", body_pos)
+                body.node.attrib['pos'] =  ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in body_pos])
+                # print("body.node.attrib['pos']", body.node.attrib['pos'])
+                fixed_gear = 200
+                body.joints[0].actuator.node.attrib['gear'] = str(int(fixed_gear * gear_factor))
+                fixed_pos_values = [0.0, 0.0, 0.0] 
+                body.joints[0].node.attrib['pos'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in fixed_pos_values])
 
-            fixed_axis_values = [0.707, 0.707, 0]
+        elif env_id == 'Ant-v5' or env_id == 'Swimmer-v5':
+            body_start = parent_body.geoms[0].start 
+            body_end = parent_body.geoms[0].end
 
-            final_axis_values = fixed_axis_values * final_axis_sign
+            #take the length of parent body
+            body_start_array = np.array(body_start) 
+            body_end_array = np.array(body_end)
+            sign = np.sign(body_end_array)
+            # print("sign", sign)
+            # print("length ratio is", length_ratio)
+            length = np.abs(np.abs(body_end_array) - np.abs(body_start_array)) * length_ratio if length_ratio is not None else np.abs(np.abs(body_end_array) - np.abs(body_start_array))         # The final length is a result of (default length * length ratio) - Apr23 Kishan
+            # print("length unsigned", length, type(length))
+            length_new = length * sign
+            
+            if attach_loc is None:
+                pass
+            if attach_loc == 'spot_0':
+                angle = 0
+                new_x, new_y, new_z = transform_body(angle, length_new) 
+                body_end = [new_x, new_y, new_z]
+            elif attach_loc == 'spot_1':
+                angle = 30
+                new_x, new_y, new_z = transform_body(angle, length_new) 
+                body_end = [new_x, new_y, new_z]
+                # print("body_end when spot_2 is selected", body_end)
+            elif attach_loc == 'spot_2':
+                angle = 60
+                new_x, new_y, new_z = transform_body(angle, length_new) 
+                body_end = [new_x, new_y, new_z]
+                # print("body_end when spot_3 is selected", body_end)
+            elif attach_loc == 'spot_3':
+                angle = 90
+                new_x, new_y, new_z = transform_body(angle, length_new) 
+                body_end = [new_x, new_y, new_z]
+            
+            if parent_body is None:
+                pass
+            else:
+                # body_fromto = body_list[-1].geoms[0].node.attrib['fromto']
+                fromto_end = parent_body.geoms[0].end
+                # body_start = fromto_end
+                child_body_pos = fromto_end
+                body.node.attrib['pos'] =  ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in child_body_pos])
+                length_new = body_end
+                sign_for_axis = np.sign(body_end)
+                # print("sign_for_axis", sign_for_axis, type(sign_for_axis))
+                if sign_for_axis[0] == sign_for_axis[1]:
+                    final_axis_sign = np.array([-1, 1, 0])
+                else:
+                    final_axis_sign = np.array([-1, -1, 0])
+                
+                if env_id == 'Ant-v5': 
+                    fixed_axis_values = [0.707, 0.707, 0]
+                    final_axis_values = fixed_axis_values * final_axis_sign
+                    body.joints[0].node.attrib['axis'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in final_axis_values])
+                fixed_pos_values = [0.0, 0.0, 0.0] 
+                body.joints[0].node.attrib['pos'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in fixed_pos_values])
+                fixed_size = 0.08
+                body.geoms[0].node.attrib['size'] = str(fixed_size * size_factor)
 
-            body.joints[0].node.attrib['axis'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in final_axis_values])
-
-            # print("body.node.attrib['pos']", body.node.attrib['pos'])
-            # body_end = np.array(body_end)
-            # print("body_end", body_end)
-            # length = np.array(length_new)
-            # body.geoms[0].end = length_new
-            #concatenate body_start and body_end values and write to geom['fromto]
-            # print("before")
-            # print("body_start", body_start)
-            # print("body_end", body_end)
-            # pprint(vars(body.geoms[0]))
-            # body.geoms[0].start = body_start
-            fixed_pos_values = [0.0, 0.0, 0.0] 
-            body.joints[0].node.attrib['pos'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in fixed_pos_values])
-
-            # if attach_loc == ''
-            # new_axis = 
-            # body.joints[0].node.attrib['axis'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in new_axis])
-
-
-            fixed_size = 0.08
-            body.geoms[0].node.attrib['size'] = str(fixed_size * size_factor)
-
-            body.geoms[0].start = fixed_pos_values
-            body.geoms[0].end = length_new
-            # pprint(vars(body.geoms[0]))
-            body.geoms[0].node.attrib['fromto'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in np.concatenate([fixed_pos_values, length_new])])
-            # print(body.geoms[0].node.attrib['fromto'])
-            # print("AFTER REDESIGN ::: BODY START & BODY END and type of BODY END", body.geoms[0].start, body.geoms[0].end, type(body.geoms[0].end))
-            fixed_gear = 150
-          
-            # body.joints[0].actuator.node.attrib['gear'] = str(int(fixed_gear * gear_factor))
+                body.geoms[0].start = fixed_pos_values
+                body.geoms[0].end = length_new
+                # pprint(vars(body.geoms[0]))
+                body.geoms[0].node.attrib['fromto'] = ' '.join([f'{x:.6f}'.rstrip('0').rstrip('.') for x in np.concatenate([fixed_pos_values, length_new])])
+                
+                if env_id == 'Hopper-v5':
+                    fixed_gear = 200
+                else:
+                    fixed_gear = 150
+                gear_factor = 1
+                body.joints[0].actuator.node.attrib['gear'] = str(int(fixed_gear * gear_factor))
 
         body_list.append(body)
         self.bodies = body_list
@@ -589,12 +613,16 @@ def find_parent_in_graph(node, edges):
                     parent_node = _edge[0]
     return parent_node
 
-def graph_to_robot_with_init_design(graph, xml_dir, log_dir, exp_method, min_resource, flag):
+def graph_to_robot_with_init_design(env_id, graph, xml_dir, log_dir, exp_method, min_resource, flag):
     '''
     This function creates a xml_robot from given graph and saves this .xml file in xml_dir
     '''
+    # print("entered graph_to_robot")
+    with open(os.path.join(log_dir, "graph_jects.pickle"), "ab") as file:
+        pickle.dump(graph, file)  # Append the new graph object
 
-    xml_robot = Robot(xml=f'{xml_dir}/env.xml')
+    xml_robot = Robot(xml=f'{xml_dir}/env.xml', env_id=env_id)
+    # print("Inited xml_robot")
     root = xml_robot.tree.getroot().find('worldbody').find('body')
 
     nodes = graph.nodes
@@ -624,7 +652,7 @@ def graph_to_robot_with_init_design(graph, xml_dir, log_dir, exp_method, min_res
     # Allowed values for length_ratio, size, and gear
 
     if exp_method in ["CA", "GSCA", "linearscaling"]:
-        values1 = [1, 0.9, 0.8, 1.1, 1.2]  # For length_ratio, size, gear
+        values1 = [1, 0.95, 0.9, 1.05, 1.1]  # For length_ratio, size, gear
         if exp_method in ["linearscaling"]:
             values2 = [1]  # For resource
         else:
@@ -635,15 +663,15 @@ def graph_to_robot_with_init_design(graph, xml_dir, log_dir, exp_method, min_res
         # values2 = [1, 0.75, 0.5, 1.25, 1.5]  # For resource
 
         # Generate all possible combinations of (length_ratio, size, gear) and (resource)
-        combinations = list(itertools.product(values1, values1, values2))
+        combinations = list(itertools.product(values1, values1, values1, values2))
 
         # Create the node_map with unique combinations
         node_map = {
             i: {
                 'length_ratio': comb[0],
                 'size': comb[1],
-                # 'gear': comb[2],
-                'resource': comb[2]  # Use comb[3] from values2
+                'gear': comb[2],
+                'resource': comb[3]  # Use comb[3] from values2
             }
             for i, comb in enumerate(combinations)
         }
@@ -759,8 +787,9 @@ def graph_to_robot_with_init_design(graph, xml_dir, log_dir, exp_method, min_res
         geom_type = None
         length = child_node_mods['length_ratio']
         size = child_node_mods['size']
-        # gear = child_node_mods['gear']
-        xml_robot.redesign_bodies_with_init_design(body_list, child, attach_loc, geom_type, parent_body, length, size)
+        gear_factor = child_node_mods['gear']
+        # print("calling redesign")
+        xml_robot.redesign_bodies_with_init_design(env_id, body_list, child, attach_loc, geom_type, parent_body, length, size, gear_factor) 
 
         if exp_method in ["CA", "GSCA", "linearscaling"]:
             resource_factor = child_node_mods['resource']
@@ -829,5 +858,6 @@ def get_attribs(root):
             node_cats.append(item[-1])
 
     return node_cats
+
 
 

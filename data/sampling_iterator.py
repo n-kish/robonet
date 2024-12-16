@@ -8,7 +8,7 @@ import networkx as nx
 import numpy as np
 import torch
 import torch.nn as nn
-from rdkit import Chem, RDLogger
+# from rdkit import Chem, RDLogger
 from torch.utils.data import Dataset, IterableDataset
 
 from data.replay_buffer import ReplayBuffer
@@ -121,7 +121,7 @@ class SamplingIterator(IterableDataset):
         self.log_hooks.append(hook)
 
     def _idx_iterator(self):
-        RDLogger.DisableLog("rdApp.*")
+        #RDLogger.DisableLog("rdApp.*")
         if self.stream:
             # print("This is self.data", len(self.data))
             # If we're streaming data, just sample `offline_batch_size` indices
@@ -212,6 +212,7 @@ class SamplingIterator(IterableDataset):
                         self.min_resource,
                         cond_info["encoding"][num_offline:],
                         random_action_prob=self.random_action_prob,
+                        env_id=self.env_id
                     )
                     # print("Collected trajs", trajs)
                 if self.algo.bootstrap_own_reward:
@@ -225,7 +226,7 @@ class SamplingIterator(IterableDataset):
                         [i + num_offline for i in range(num_online) if trajs[i + num_offline]["is_valid"]]
                     ).long()
                     # fetch the valid trajectories endpoints
-                    xml_robots = [graph_to_robot_with_init_design(trajs[i]["result"], self.xml_dir, self.log_dir, self.exp_method, self.min_resource, flag="sampler_eval") for i in valid_idcs]
+                    xml_robots = [graph_to_robot_with_init_design(env_id=self.env_id, graph=trajs[i]["result"], xml_dir=self.xml_dir, log_dir=self.log_dir, exp_method=self.exp_method, min_resource=self.min_resource, flag="sampler_eval") for i in valid_idcs]
 
                     # ask the task to compute their reward
                     online_flat_rew, m_is_valid = self.task.compute_flat_rewards(xml_robots, [trajs[i]["result"] for i in valid_idcs], self.min_resource, self.env_id)    # trajs[i]["result"] - gfn graphs
@@ -233,9 +234,11 @@ class SamplingIterator(IterableDataset):
                         online_flat_rew.ndim == 2
                     ), "FlatRewards should be (mbsize, n_objectives), even if n_objectives is 1"
                     # The task may decide some of the robots are invalid, we have to again filter those
-                    valid_idcs = valid_idcs[m_is_valid]
+                    # valid_idcs = valid_idcs[m_is_valid]
+                    # print("valid_idcs", valid_idcs)
                     valid_robots = [m for m, v in zip(robots, m_is_valid) if v]
                     pred_reward = torch.zeros((num_online, online_flat_rew.shape[1]))
+                    # print("online_flat_rew.shape[1]", online_flat_rew.shape[1])
                     # print("pred_reward", pred_reward, type(pred_reward))
                     online_flat_rew = online_flat_rew.to(pred_reward.dtype)
                     pred_reward[valid_idcs - num_offline] = online_flat_rew

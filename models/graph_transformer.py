@@ -151,8 +151,6 @@ class GraphTransformerGFN(nn.Module):
     def __init__(
         self,
         env_ctx,
-        log_dir,
-        data_collection_iters,
         num_emb=64,
         num_layers=3,
         num_heads=2,
@@ -212,8 +210,6 @@ class GraphTransformerGFN(nn.Module):
             "non_edge": "non_edge_index",
             "edge": "edge_index",
         }
-        self.log_dir = log_dir
-        self.data_collection_iters = data_collection_iters
 
         # Here we create only the embedding -> logit mapping MLPs that are required by the environment
         mlps = {}

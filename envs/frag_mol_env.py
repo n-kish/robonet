@@ -2,13 +2,13 @@ from collections import defaultdict
 from typing import List, Tuple
 
 import numpy as np
-import rdkit.Chem as Chem
+# import rdkit.Chem as Chem
 import torch
 import torch_geometric.data as gd
 
 from envs.graph_building_env import Graph, GraphAction, GraphActionType, GraphBuildingEnvContext
 from models import bengio2021flow
-from envs.robot_env import graph_to_robot, graph_to_robot_with_init_design
+from envs.robot_env import graph_to_robot_with_init_design
 import pprint
 
 class FragMolBuildingEnvContext(GraphBuildingEnvContext):
@@ -374,13 +374,13 @@ class FragMolBuildingEnvContext(GraphBuildingEnvContext):
     #     return True
 
 
-    def is_sane(self, g: Graph, xml_dir: str, log_dir: str, exp_method, min_resource) -> bool:
+    def is_sane(self, env, g: Graph, xml_dir: str, log_dir: str, exp_method, min_resource) -> bool:
         """Verifies whether the given Graph is valid according to MuJoCo"""
         #Currently is_sane produces a robot xml which is not used but is written into xml_dir. This is repetitive and can be avoided.
         print("Received graph", g, type(g))     
         try:
             # print("trying to build robot")
-            robot = graph_to_robot_with_init_design(g, xml_dir, log_dir, exp_method, min_resource, flag="sanity_check")
+            robot = graph_to_robot_with_init_design(env, g, xml_dir, log_dir, exp_method, min_resource, flag="sanity_check")
             print(" $$$$$$$ XML robot: Success", robot)
             assert robot is not None
         except Exception as e:
